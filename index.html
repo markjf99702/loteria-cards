@@ -2,208 +2,269 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Loteria Digital</title>
-<style>
-    :root {
-        --marker-color: rgba(230, 50, 50, 0.7);
-        --bg-color: #121212;
-        --card-border: #333;
-    }
-
-    * { box-sizing: border-box; }
-
-    html, body {
-        /* Use dvh to account for mobile browser bars */
-        height: 100dvh; 
-        width: 100vw;
-        margin: 0;
-        padding: 0;
-        overflow: hidden; 
-        background-color: var(--bg-color);
-        font-family: -apple-system, sans-serif;
-        /* Prevents the 'bounce' effect on iOS */
-        position: fixed;
-    }
-
-    body { 
-        display: flex; 
-        flex-direction: column; 
-        height: 100dvh;
-    }
-
-    .header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        height: 44px; /* Slightly smaller for mobile */
-        padding: 0 15px;
-        color: white;
-        flex-shrink: 0;
-    }
-
-    .game-container {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        grid-template-rows: 1fr 1fr;
-        gap: 6px;
-        padding: 6px;
-        flex-grow: 1;
-        /* Force the container to never exceed the remaining height */
-        height: calc(100dvh - 50px);
-        min-height: 0; 
-    }
-
-    .tabla {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        grid-template-rows: repeat(4, 1fr);
-        border: 2px solid var(--card-border);
-        background-color: #fff;
-        height: 100%;
-        width: 100%;
-        min-height: 0;
-        overflow: hidden;
-    }
-
-    .cell {
-        position: relative;
-        border: 0.5px solid #eee;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        min-height: 0;
-        min-width: 0;
-    }
-
-    .cell img {
-        width: 100%;
-        height: 100%;
-        /* 'fill' is necessary to ignore the image's internal aspect ratio */
-        object-fit: fill; 
-        display: block;
-        pointer-events: none;
-    }
-
-    .cell.marked::after {
-        content: '';
-        position: absolute;
-        width: 70%;
-        height: 50%;
-        background-color: var(--marker-color);
-        border-radius: 50%;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.5);
-        z-index: 10;
-    }
-
-    button {
-        padding: 6px 12px;
-        background-color: #d9534f;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        font-size: 0.9rem;
-    }
-</style>
-</head>
-<body>
-
-    <div class="header">
-        <span style="font-weight: bold;">Loteria Boards</span>
-        <button onclick="resetGame()">Reset All</button>
-    </div>
-
-    <div class="game-container">
-        <div class="tabla" id="card1">
-            <div class="cell" onclick="toggle(this)"><img src="ElMelon.jpg" alt=""></div>
-            <div class="cell" onclick="toggle(this)"><img src="ElCotorro.jpg" alt=""></div>
-            <div class="cell" onclick="toggle(this)"><img src="LaCampana.jpg" alt=""></div>
-            <div class="cell" onclick="toggle(this)"><img src="LaArana.jpg" alt=""></div>
-            <div class="cell" onclick="toggle(this)"><img src="LaBandera.jpg" alt=""></div>
-            <div class="cell" onclick="toggle(this)"><img src="LaPalma.jpg" alt=""></div>
-            <div class="cell" onclick="toggle(this)"><img src="ElTambor.jpg" alt=""></div>
-            <div class="cell" onclick="toggle(this)"><img src="LaMaceta.jpg" alt=""></div>
-            <div class="cell" onclick="toggle(this)"><img src="ElNegrito.jpg" alt=""></div>
-            <div class="cell" onclick="toggle(this)"><img src="LasJaras.jpg" alt=""></div>
-            <div class="cell" onclick="toggle(this)"><img src="LasJaras.jpg" alt=""></div>
-            <div class="cell" onclick="toggle(this)"><img src="ElPino.jpg" alt=""></div>
-            <div class="cell" onclick="toggle(this)"><img src="LaBota.jpg" alt=""></div>
-            <div class="cell" onclick="toggle(this)"><img src="LaGarza.jpg" alt=""></div>
-            <div class="cell" onclick="toggle(this)"><img src="ElCantarito.jpg" alt=""></div>
-            <div class="cell" onclick="toggle(this)"><img src="ElPescado.jpg" alt=""></div>
-        </div>
-
-        <div class="tabla" id="card2">
-            <div class="cell" onclick="toggle(this)"><img src="ElMelon.jpg" alt=""></div>
-            <div class="cell" onclick="toggle(this)"><img src="ElCotorro.jpg" alt=""></div>
-            <div class="cell" onclick="toggle(this)"><img src="LaCampana.jpg" alt=""></div>
-            <div class="cell" onclick="toggle(this)"><img src="LaArana.jpg" alt=""></div>
-            <div class="cell" onclick="toggle(this)"><img src="LaBandera.jpg" alt=""></div>
-            <div class="cell" onclick="toggle(this)"><img src="LaPalma.jpg" alt=""></div>
-            <div class="cell" onclick="toggle(this)"><img src="ElTambor.jpg" alt=""></div>
-            <div class="cell" onclick="toggle(this)"><img src="LaMaceta.jpg" alt=""></div>
-            <div class="cell" onclick="toggle(this)"><img src="ElNegrito.jpg" alt=""></div>
-            <div class="cell" onclick="toggle(this)"><img src="LasJaras.jpg" alt=""></div>
-            <div class="cell" onclick="toggle(this)"><img src="LasJaras.jpg" alt=""></div>
-            <div class="cell" onclick="toggle(this)"><img src="ElPino.jpg" alt=""></div>
-            <div class="cell" onclick="toggle(this)"><img src="LaBota.jpg" alt=""></div>
-            <div class="cell" onclick="toggle(this)"><img src="LaGarza.jpg" alt=""></div>
-            <div class="cell" onclick="toggle(this)"><img src="ElCantarito.jpg" alt=""></div>
-            <div class="cell" onclick="toggle(this)"><img src="ElPescado.jpg" alt=""></div>
-            </div>
-
-        <div class="tabla" id="card3">
-            <div class="cell" onclick="toggle(this)"><img src="ElMelon.jpg" alt=""></div>
-            <div class="cell" onclick="toggle(this)"><img src="ElCotorro.jpg" alt=""></div>
-            <div class="cell" onclick="toggle(this)"><img src="LaCampana.jpg" alt=""></div>
-            <div class="cell" onclick="toggle(this)"><img src="LaArana.jpg" alt=""></div>
-            <div class="cell" onclick="toggle(this)"><img src="LaBandera.jpg" alt=""></div>
-            <div class="cell" onclick="toggle(this)"><img src="LaPalma.jpg" alt=""></div>
-            <div class="cell" onclick="toggle(this)"><img src="ElTambor.jpg" alt=""></div>
-            <div class="cell" onclick="toggle(this)"><img src="LaMaceta.jpg" alt=""></div>
-            <div class="cell" onclick="toggle(this)"><img src="ElNegrito.jpg" alt=""></div>
-            <div class="cell" onclick="toggle(this)"><img src="LasJaras.jpg" alt=""></div>
-            <div class="cell" onclick="toggle(this)"><img src="LasJaras.jpg" alt=""></div>
-            <div class="cell" onclick="toggle(this)"><img src="ElPino.jpg" alt=""></div>
-            <div class="cell" onclick="toggle(this)"><img src="LaBota.jpg" alt=""></div>
-            <div class="cell" onclick="toggle(this)"><img src="LaGarza.jpg" alt=""></div>
-            <div class="cell" onclick="toggle(this)"><img src="ElCantarito.jpg" alt=""></div>
-            <div class="cell" onclick="toggle(this)"><img src="ElPescado.jpg" alt=""></div>
-            </div>
-
-        <div class="tabla" id="card4">
-            <div class="cell" onclick="toggle(this)"><img src="ElMelon.jpg" alt=""></div>
-            <div class="cell" onclick="toggle(this)"><img src="ElCotorro.jpg" alt=""></div>
-            <div class="cell" onclick="toggle(this)"><img src="LaCampana.jpg" alt=""></div>
-            <div class="cell" onclick="toggle(this)"><img src="LaArana.jpg" alt=""></div>
-            <div class="cell" onclick="toggle(this)"><img src="LaBandera.jpg" alt=""></div>
-            <div class="cell" onclick="toggle(this)"><img src="LaPalma.jpg" alt=""></div>
-            <div class="cell" onclick="toggle(this)"><img src="ElTambor.jpg" alt=""></div>
-            <div class="cell" onclick="toggle(this)"><img src="LaMaceta.jpg" alt=""></div>
-            <div class="cell" onclick="toggle(this)"><img src="ElNegrito.jpg" alt=""></div>
-            <div class="cell" onclick="toggle(this)"><img src="LasJaras.jpg" alt=""></div>
-            <div class="cell" onclick="toggle(this)"><img src="LasJaras.jpg" alt=""></div>
-            <div class="cell" onclick="toggle(this)"><img src="ElPino.jpg" alt=""></div>
-            <div class="cell" onclick="toggle(this)"><img src="LaBota.jpg" alt=""></div>
-            <div class="cell" onclick="toggle(this)"><img src="LaGarza.jpg" alt=""></div>
-            <div class="cell" onclick="toggle(this)"><img src="ElCantarito.jpg" alt=""></div>
-            <div class="cell" onclick="toggle(this)"><img src="ElPescado.jpg" alt=""></div>
-            </div>
-    </div>
-
-    <script>
-        function toggle(element) {
-            element.classList.toggle('marked');
+    <style>
+        :root {
+            --marker-color: rgba(230, 50, 50, 0.85);
+            --marker-size: 60%;
+            --bg-color: #121212;
+            --card-border: #333;
         }
 
-        function resetGame() {
-            if(confirm("Clear all markers?")) {
-                document.querySelectorAll('.cell.marked').forEach(el => el.classList.remove('marked'));
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        html, body {
+            height: 100dvh; width: 100vw;
+            margin: 0; padding: 0; overflow: hidden; 
+            background-color: var(--bg-color);
+            font-family: -apple-system, sans-serif;
+            position: fixed;
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+        }
+
+        body { display: flex; flex-direction: column; }
+
+        .header {
+            display: flex; justify-content: space-between; align-items: center;
+            height: 50px; padding: 0 15px; color: white; flex-shrink: 0;
+            border-bottom: 1px solid #333;
+        }
+
+        .game-container {
+            display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr;
+            gap: 10px; padding: 10px; flex: 1; height: 0; min-height: 0;
+            max-width: 1400px; margin: 0 auto; width: 100%;
+        }
+
+        .tabla {
+            display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(4, 1fr);
+            border: 2px solid var(--card-border); background-color: #000; height: 100%; width: 100%; min-height: 0;
+        }
+
+        .cell {
+            position: relative; border: 0.5px solid #222;
+            display: flex; align-items: center; justify-content: center; overflow: hidden;
+            background-size: cover; background-position: center;
+        }
+
+        .cell::before {
+            content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background-image: inherit; background-size: cover;
+            filter: blur(12px) brightness(0.5); opacity: 0.7; z-index: 0;
+        }
+
+        .cell img { 
+            width: 100%; height: 100%; object-fit: contain; 
+            display: block; position: relative; z-index: 1;
+            background-color: transparent;
+        }
+
+        .cell .error-text {
+            position: absolute; color: #666; font-size: 0.5rem; text-align: center; z-index: 0;
+        }
+
+        .cell.marked::after {
+            content: ''; position: absolute;
+            width: var(--marker-size); height: calc(var(--marker-size) * 0.75);
+            background-color: var(--marker-color); border-radius: 50%; z-index: 10;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.6);
+        }
+
+        #settings-panel {
+            position: fixed; top: 0; right: -300px; width: 280px; height: 100%;
+            background: #1a1a1a; color: white; padding: 20px; transition: 0.3s; z-index: 100;
+            box-shadow: -5px 0 15px rgba(0,0,0,0.5); border-left: 1px solid #333;
+        }
+
+        #settings-panel.open { right: 0; }
+
+        #edit-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.95); z-index: 200; flex-direction: column;
+            align-items: center; justify-content: center; padding: 20px;
+        }
+
+        #edit-overlay.open { display: flex; }
+
+        .selection-grid {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+            max-height: 75vh; overflow-y: scroll; -webkit-overflow-scrolling: touch;
+            padding: 15px; width: 100%; max-width: 800px; background: #111; border-radius: 12px;
+        }
+
+        .selection-item {
+            background: #222; border: 1px solid #444; border-radius: 6px;
+            padding: 5px; text-align: center; color: #ccc; cursor: pointer;
+        }
+
+        .selection-item img { width: 100%; height: auto; display: block; margin-bottom: 4px; border-radius: 2px; }
+
+        button {
+            padding: 8px 16px; background-color: #333; color: white;
+            border: 1px solid #444; border-radius: 4px; cursor: pointer; font-weight: 500;
+        }
+        
+        button.active { background-color: #d9534f; border-color: #d9534f; }
+    </style>
+</head>
+<body onload="initialize()">
+
+    <div class="header">
+        <div>
+            <button onclick="toggleSettings()">⚙️ Settings</button>
+            <button id="editBtn" onclick="toggleEditMode()">Edit Mode</button>
+        </div>
+        <span style="font-weight: 600; letter-spacing: 1px;">LOTERIA</span>
+        <button onclick="resetGame()" style="background: #d9534f; border: none;">Reset Marks</button>
+    </div>
+
+    <div id="settings-panel">
+        <h3>Menu</h3>
+        <div class="settings-group">
+            <label style="display:block; color:#888; margin-bottom:8px;">Marker Color</label>
+            <input type="color" id="colorPicker" value="#e63232" style="width:100%; height:40px;" onchange="updateColor(this.value)">
+        </div>
+        <div class="settings-group" style="margin-top:20px;">
+            <label style="display:block; color:#888; margin-bottom:8px;">Marker Size</label>
+            <input type="range" id="sizePicker" min="30" max="90" value="60" style="width:100%;" oninput="updateSize(this.value)">
+        </div>
+        <hr style="border: 0; border-top: 1px solid #333; margin: 20px 0;">
+        <button onclick="factoryReset()" style="width: 100%; background: #444;">Factory Reset Boards</button>
+        <button onclick="toggleSettings()" style="width: 100%; margin-top: 10px;">Close</button>
+    </div>
+
+    <div id="edit-overlay">
+        <h2 style="color: white; margin-bottom: 15px;">Change Card</h2>
+        <div id="selection-grid" class="selection-grid"></div>
+        <button onclick="closeEditOverlay()" style="margin-top: 20px; width: 100%; max-width: 800px; padding: 15px; background:#444;">Cancel</button>
+    </div>
+
+    <div id="main-container" class="game-container"></div>
+
+    <script>
+        let isEditMode = false;
+        let currentEditIndex = null;
+
+        const cardLibrary = [
+            "ElGallo.jpg", "ElDiablito.jpg", "LaDama.jpg", "ElCatrin.jpg", "ElParaguas.jpg", "LaSirena.jpg", "LaEscalera.jpg", "LaBotella.jpg", "ElBarril.jpg", "ElArbol.jpg",
+            "ElMelon.jpg", "ElValiente.jpg", "ElGorrito.jpg", "LaMuerte.jpg", "LaPera.jpg", "LaBandera.jpg", "ElBandolon.jpg", "ElVioloncello.jpg", "LaGarza.jpg", "ElPajaro.jpg",
+            "LaMano.jpg", "LaBota.jpg", "LaLuna.jpg", "ElCotorro.jpg", "ElBorracho.jpg", "ElNegrito.jpg", "ElCorazon.jpg", "LaSandia.jpg", "ElTambor.jpg", "ElCamaron.jpg",
+            "LasJaras.jpg", "ElMusico.jpg", "LaArana.jpg", "LaEstrella.jpg", "ElCazo.jpg", "ElMundo.jpg", "ElApache.jpg", "ElNopal.jpg", "ElAlacran.jpg", "LaRosa.jpg",
+            "LaCalavera.jpg", "LaCampana.jpg", "ElCantarito.jpg", "ElVenado.jpg", "ElSol.jpg", "LaCorona.jpg", "LaChalupa.jpg", "ElPino.jpg", "ElPescado.jpg", "LaPalma.jpg",
+            "LaMaceta.jpg", "ElArpa.jpg", "LaRana.jpg", "ElSoldado.jpg"
+        ];
+
+        // Unique sequences for all four boards
+        const board1 = ["ElMelon.jpg", "ElCotorro.jpg", "LaCampana.jpg", "LaArana.jpg", "LaBandera.jpg", "LaPalma.jpg", "ElTambor.jpg", "LaMaceta.jpg", "ElNegrito.jpg", "LasJaras.jpg", "LasJaras.jpg", "ElPino.jpg", "LaBota.jpg", "LaGarza.jpg", "ElCantarito.jpg", "ElPescado.jpg"];
+        const board2 = ["ElVenado.jpg", "ElApache.jpg", "ElCatrin.jpg", "ElMusico.jpg", "ElCazo.jpg", "LaCorona.jpg", "LaCorona.jpg", "ElNegrito.jpg", "ElParaguas.jpg", "ElBarril.jpg", "LaEstrella.jpg", "LaSandia.jpg", "ElPajaro.jpg", "ElValiente.jpg", "LaBotella.jpg", "ElMundo.jpg"];
+        const board3 = ["ElGallo.jpg", "ElNopal.jpg", "ElDiablito.jpg", "LaMano.jpg", "LaEstrella.jpg", "LaChalupa.jpg", "LaChalupa.jpg", "ElGorrito.jpg", "LaDama.jpg", "LaMuerte.jpg", "LaLuna.jpg", "ElSoldado.jpg", "ElVioloncello.jpg", "ElApache.jpg", "LaSirena.jpg", "ElCamaron.jpg"];
+        const board4 = ["LaPera.jpg", "ElBorracho.jpg", "ElSoldado.jpg", "ElBandolon.jpg", "ElAlacran.jpg", "LaRosa.jpg", "LaRosa.jpg", "LaEscalera.jpg", "ElSol.jpg", "ElValiente.jpg", "LaCalavera.jpg", "ElArpa.jpg", "LaRana.jpg", "ElArbol.jpg", "ElCorazon.jpg", "ElApache.jpg"];
+
+        const fullLayout = [...board1, ...board2, ...board3, ...board4];
+
+        let boardImages = JSON.parse(localStorage.getItem('loteria-images')) || fullLayout;
+
+        function initialize() { renderBoards(); loadSettings(); }
+
+        function renderBoards() {
+            const container = document.getElementById('main-container');
+            container.innerHTML = '';
+            for (let b = 0; b < 4; b++) {
+                const tabla = document.createElement('div');
+                tabla.className = 'tabla';
+                tabla.id = `board-${b}`;
+                for (let c = 0; c < 16; c++) {
+                    const idx = (b * 16) + c;
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.dataset.cardName = boardImages[idx];
+                    cell.style.backgroundImage = `url('${boardImages[idx]}')`;
+                    cell.onclick = (e) => handleCellClick(e, cell, idx, b);
+
+                    const errorText = document.createElement('div');
+                    errorText.className = 'error-text';
+                    errorText.innerHTML = boardImages[idx].replace('.jpg', '');
+                    
+                    const img = document.createElement('img');
+                    img.src = boardImages[idx];
+                    img.onerror = () => { img.style.opacity = "0"; }; 
+
+                    cell.appendChild(errorText);
+                    cell.appendChild(img);
+                    tabla.appendChild(cell);
+                }
+                container.appendChild(tabla);
             }
+        }
+
+        function handleCellClick(event, element, index, boardIdx) {
+            if (isEditMode) { currentEditIndex = index; openEditOverlay(); }
+            else {
+                const cardName = element.dataset.cardName;
+                const isMarked = element.classList.contains('marked');
+                const board = document.getElementById(`board-${boardIdx}`);
+                const matchingCells = board.querySelectorAll(`.cell[data-card-name="${cardName}"]`);
+                matchingCells.forEach(cell => {
+                    if (isMarked) cell.classList.remove('marked');
+                    else cell.classList.add('marked');
+                });
+            }
+        }
+
+        function openEditOverlay() {
+            const grid = document.getElementById('selection-grid');
+            grid.innerHTML = '';
+            cardLibrary.forEach(card => {
+                const item = document.createElement('div');
+                item.className = 'selection-item';
+                item.onclick = () => selectNewCard(card);
+                const img = document.createElement('img');
+                img.src = card;
+                const label = document.createElement('div');
+                label.innerHTML = card.replace('.jpg', '');
+                label.style.fontSize = "0.6rem";
+                item.appendChild(img);
+                item.appendChild(label);
+                grid.appendChild(item);
+            });
+            document.getElementById('edit-overlay').classList.add('open');
+        }
+
+        function selectNewCard(cardName) {
+            if (currentEditIndex !== null) {
+                boardImages[currentEditIndex] = cardName;
+                localStorage.setItem('loteria-images', JSON.stringify(boardImages));
+                renderBoards();
+            }
+            closeEditOverlay();
+        }
+
+        function closeEditOverlay() { document.getElementById('edit-overlay').classList.remove('open'); currentEditIndex = null; }
+        function toggleEditMode() { isEditMode = !isEditMode; document.getElementById('editBtn').classList.toggle('active'); }
+        function resetGame() { if(confirm("Clear all markers?")) { document.querySelectorAll('.cell.marked').forEach(el => el.classList.remove('marked')); } }
+        
+        function factoryReset() {
+            if(confirm("Revert to your 4 unique board layouts? This will erase custom edits.")) {
+                boardImages = [...fullLayout];
+                localStorage.setItem('loteria-images', JSON.stringify(boardImages));
+                renderBoards();
+                toggleSettings();
+            }
+        }
+
+        function toggleSettings() { document.getElementById('settings-panel').classList.toggle('open'); }
+        function updateColor(val) {
+            const r = parseInt(val.slice(1, 3), 16), g = parseInt(val.slice(3, 5), 16), b = parseInt(val.slice(5, 7), 16);
+            document.documentElement.style.setProperty('--marker-color', `rgba(${r}, ${g}, ${b}, 0.85)`);
+            localStorage.setItem('loteria-color', val);
+        }
+        function updateSize(val) { document.documentElement.style.setProperty('--marker-size', val + '%'); localStorage.setItem('loteria-size', val); }
+        function loadSettings() {
+            const savedColor = localStorage.getItem('loteria-color'), savedSize = localStorage.getItem('loteria-size');
+            if (savedColor) { document.getElementById('colorPicker').value = savedColor; updateColor(savedColor); }
+            if (savedSize) { document.getElementById('sizePicker').value = savedSize; updateSize(savedSize); }
         }
     </script>
 </body>
-
 </html>
-
