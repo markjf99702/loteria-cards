@@ -10,9 +10,11 @@
     <style>
         :root {
             --marker-color: rgba(230, 50, 50, 0.9);
-            --marker-size: 70%;
+            --marker-size: 75%;
             --bg-color: #000;
             --card-border: #222;
+            /* New variable for the "dimmed" state of non-playable cards */
+            --dim-overlay: rgba(0, 0, 0, 0.85); 
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -23,29 +25,22 @@
             background-color: var(--bg-color);
             font-family: -apple-system, sans-serif;
             position: fixed;
-            /* Respects the iPad status bar area when in standalone mode */
-            padding-top: env(safe-area-inset-top); 
         }
 
         body { display: flex; flex-direction: column; align-items: center; }
 
         .header {
             display: flex; justify-content: space-between; align-items: center;
-            height: 50px; width: 100%; padding: 0 15px; color: #555; flex-shrink: 0;
+            height: 40px; width: 100%; padding: 0 10px; color: #444; flex-shrink: 0;
             z-index: 10;
         }
 
         .game-container {
             display: grid; 
-            /* Optimized for Portrait: 2x2 grid still fits best on 10.2" screen */
             grid-template-columns: repeat(2, auto); 
             grid-template-rows: repeat(2, auto);
-            gap: 12px; 
-            padding: 10px;
-            flex-grow: 1;
-            align-content: center;
-            justify-content: center;
-            width: 100%;
+            gap: 10px; padding: 5px; flex-grow: 1;
+            align-content: center; justify-content: center; width: 100%;
         }
 
         .tabla {
@@ -53,28 +48,50 @@
             grid-template-columns: repeat(4, 1fr); 
             grid-template-rows: repeat(4, 1fr);
             border: 2px solid var(--card-border); 
-            background-color: #fff;
-            height: 42vh; /* Slightly reduced height for portrait clearance */
-            aspect-ratio: 2 / 3; 
+            background-color: #000;
+            height: 44vh; aspect-ratio: 2 / 3; 
+            position: relative;
         }
 
         .cell {
-            position: relative; border: 0.5px solid #ddd;
+            position: relative; border: 0.5px solid #222;
             display: flex; align-items: center; justify-content: center;
             overflow: hidden; background-color: #fff;
+            transition: filter 0.3s ease;
         }
 
-        .cell img { 
-            width: 100%; height: 100%; object-fit: contain; 
-            display: block; position: relative; z-index: 1;
-        }
+        .cell img { width: 100%; height: 100%; object-fit: contain; display: block; position: relative; z-index: 1; }
 
+        /* Marker logic */
         .cell.marked::after {
             content: ''; position: absolute;
             width: var(--marker-size); height: calc(var(--marker-size) * 0.7);
             background-color: var(--marker-color); border-radius: 50%; z-index: 10;
             box-shadow: 0 2px 6px rgba(0,0,0,0.5);
         }
+
+        /* --- UPDATED PATTERN GUIDE LOGIC --- */
+        
+        /* When pattern mode is active, apply dimming overlay to cells NOT in the pattern */
+        body.pattern-mode-active .cell:not(.guide-highlight)::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: var(--dim-overlay); /* Heavy dark overlay */
+            z-index: 5; pointer-events: none;
+        }
+
+        /* Optional: slightly brighten pattern cells to pop more */
+        body.pattern-mode-active .cell.guide-highlight {
+            filter: brightness(1.1);
+            z-index: 2; /* Ensure they sit above dimmed siblings if overlaps occur */
+        }
+
+        /* Overlays UI */
+        #settings-panel, #pattern-panel {
+            display: none; position: fixed; top: 50px; background: #111; padding: 20px; 
+            z-index: 100; border: 1px solid #333; border-radius: 8px; width: 250px;
+        }
+        #settings-panel { left: 10px; }
+        #pattern-panel { right: 10px; }
 
         #edit-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -84,37 +101,54 @@
         #edit-overlay.open { display: flex; }
 
         .selection-grid {
-            display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
-            max-height: 80vh; overflow-y: scroll; padding: 20px; width: 100%; max-width: 800px;
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+            max-height: 80vh; overflow-y: scroll; padding: 15px; width: 100%; max-width: 800px;
         }
-        .selection-item { background: #1a1a1a; border: 1px solid #333; padding: 8px; border-radius: 6px; }
+        .selection-item { background: #1a1a1a; border: 1px solid #333; padding: 5px; border-radius: 6px; }
         .selection-item img { width: 100%; height: auto; }
 
-        button { padding: 8px 16px; background-color: #1a1a1a; color: #777; border: 1px solid #333; border-radius: 4px; }
+        button { padding: 6px 12px; background-color: #111; color: #666; border: 1px solid #333; border-radius: 4px; font-size: 0.8rem; }
         button.active { background-color: #d9534f; color: white; border-color: #d9534f; }
+        .pattern-btn { width: 100%; margin-bottom: 5px; text-align: left; }
+        .pattern-grid { height: 10px; visibility: hidden; }
     </style>
 </head>
 <body onload="initialize()">
 
     <div class="header">
         <div>
-            <button onclick="toggleSettings()">⚙️ Menu</button>
-            <button id="editBtn" onclick="toggleEditMode()">Edit</button>
+            <button onclick="togglePanel('settings-panel')">⚙️</button>
+            <button onclick="togglePanel('pattern-panel')" id="patternBtn">PATTERNS</button>
+            <button id="editBtn" onclick="toggleEditMode()">EDIT</button>
         </div>
-        <button onclick="resetGame()">Clear Board</button>
+        <button onclick="resetGame()">CLEAR</button>
     </div>
 
-    <div id="settings-panel" style="display:none; position:fixed; top:100px; left:20px; background:#1a1a1a; padding:20px; z-index:100; border:1px solid #333; border-radius:8px;">
-        <label style="color:#888; font-size: 0.8rem;">MARKER COLOR</label><br>
+    <div id="settings-panel">
+        <label style="color:#666; font-size: 0.7rem;">MARKER COLOR</label><br>
         <input type="color" id="colorPicker" value="#e63232" style="width:100%; height:40px; margin:8px 0;" onchange="updateColor(this.value)"><br>
-        <button onclick="factoryReset()" style="width:100%; margin-bottom:10px;">Factory Reset</button>
-        <button onclick="toggleSettings()" style="width:100%;">Close</button>
+        <button onclick="factoryReset()" style="width:100%; margin-bottom:10px;">RESET BOARDS</button>
+        <button onclick="togglePanel('settings-panel')" style="width:100%;">CLOSE</button>
+    </div>
+
+    <div id="pattern-panel">
+        <label style="color:#666; font-size: 0.7rem;">GUIDE OVERLAYS</label><br><br>
+        <button class="pattern-btn" onclick="applyPattern('none')">None (Normal)</button>
+        <button class="pattern-btn" onclick="applyPattern('L')">The "L"</button>
+        <button class="pattern-btn" onclick="applyPattern('rails')">Rails (Mid Rows)</button>
+        <div class="pattern-grid"></div>
+        <button class="pattern-btn" onclick="applyPattern('escalera')">Escalera (Mid Cols)</button>
+        <button class="pattern-btn" onclick="applyPattern('square')">Small Square (Mid 4)</button>
+        <button class="pattern-btn" onclick="applyPattern('corners')">4 Corners</button>
+        <button class="pattern-btn" onclick="applyPattern('X')">The "X"</button>
+        <button class="pattern-btn" onclick="applyPattern('O')">The "O" (Perimeter)</button>
+        <button class="pattern-btn" onclick="applyPattern('blackout')">Blackout</button>
+        <button onclick="togglePanel('pattern-panel')" style="width:100%; margin-top:10px;">CLOSE</button>
     </div>
 
     <div id="edit-overlay">
-        <h3 style="color:white; margin-bottom: 15px;">Select Card</h3>
         <div id="selection-grid" class="selection-grid"></div>
-        <button onclick="closeEditOverlay()" style="margin-top:20px; padding:15px; width:100%; max-width:300px;">Cancel</button>
+        <button onclick="closeEditOverlay()" style="margin-top:20px; padding:15px; width:200px; color:#fff;">CANCEL</button>
     </div>
 
     <div id="main-container" class="game-container"></div>
@@ -123,14 +157,7 @@
         let isEditMode = false;
         let currentEditIndex = null;
 
-        const cardLibrary = [
-            "ElGallo.jpg", "ElDiablito.jpg", "LaDama.jpg", "ElCatrin.jpg", "ElParaguas.jpg", "LaSirena.jpg", "LaEscalera.jpg", "LaBotella.jpg", "ElBarril.jpg", "ElArbol.jpg",
-            "ElMelon.jpg", "ElValiente.jpg", "ElGorrito.jpg", "LaMuerte.jpg", "LaPera.jpg", "LaBandera.jpg", "ElBandolon.jpg", "ElVioloncello.jpg", "LaGarza.jpg", "ElPajaro.jpg",
-            "LaMano.jpg", "LaBota.jpg", "LaLuna.jpg", "ElCotorro.jpg", "ElBorracho.jpg", "ElNegrito.jpg", "ElCorazon.jpg", "LaSandia.jpg", "ElTambor.jpg", "ElCamaron.jpg",
-            "LasJaras.jpg", "ElMusico.jpg", "LaArana.jpg", "LaEstrella.jpg", "ElCazo.jpg", "ElMundo.jpg", "ElApache.jpg", "ElNopal.jpg", "ElAlacran.jpg", "LaRosa.jpg",
-            "LaCalavera.jpg", "LaCampana.jpg", "ElCantarito.jpg", "ElVenado.jpg", "ElSol.jpg", "LaCorona.jpg", "LaChalupa.jpg", "ElPino.jpg", "ElPescado.jpg", "LaPalma.jpg",
-            "LaMaceta.jpg", "ElArpa.jpg", "LaRana.jpg", "ElSoldado.jpg"
-        ];
+        const cardLibrary = ["ElGallo.jpg", "ElDiablito.jpg", "LaDama.jpg", "ElCatrin.jpg", "ElParaguas.jpg", "LaSirena.jpg", "LaEscalera.jpg", "LaBotella.jpg", "ElBarril.jpg", "ElArbol.jpg", "ElMelon.jpg", "ElValiente.jpg", "ElGorrito.jpg", "LaMuerte.jpg", "LaPera.jpg", "LaBandera.jpg", "ElBandolon.jpg", "ElVioloncello.jpg", "LaGarza.jpg", "ElPajaro.jpg", "LaMano.jpg", "LaBota.jpg", "LaLuna.jpg", "ElCotorro.jpg", "ElBorracho.jpg", "ElNegrito.jpg", "ElCorazon.jpg", "LaSandia.jpg", "ElTambor.jpg", "ElCamaron.jpg", "LasJaras.jpg", "ElMusico.jpg", "LaArana.jpg", "LaEstrella.jpg", "ElCazo.jpg", "ElMundo.jpg", "ElApache.jpg", "ElNopal.jpg", "ElAlacran.jpg", "LaRosa.jpg", "LaCalavera.jpg", "LaCampana.jpg", "ElCantarito.jpg", "ElVenado.jpg", "ElSol.jpg", "LaCorona.jpg", "LaChalupa.jpg", "ElPino.jpg", "ElPescado.jpg", "LaPalma.jpg", "LaMaceta.jpg", "ElArpa.jpg", "LaRana.jpg", "ElSoldado.jpg"];
 
         const b1 = ["ElMelon.jpg", "ElCotorro.jpg", "LaCampana.jpg", "LaArana.jpg", "LaBandera.jpg", "LaPalma.jpg", "ElTambor.jpg", "LaMaceta.jpg", "ElNegrito.jpg", "LasJaras.jpg", "LasJaras.jpg", "ElPino.jpg", "LaBota.jpg", "LaGarza.jpg", "ElCantarito.jpg", "ElPescado.jpg"];
         const b2 = ["ElVenado.jpg", "ElApache.jpg", "ElCatrin.jpg", "ElMusico.jpg", "ElCazo.jpg", "LaCorona.jpg", "LaCorona.jpg", "ElNegrito.jpg", "ElParaguas.jpg", "ElBarril.jpg", "LaEstrella.jpg", "LaSandia.jpg", "ElPajaro.jpg", "ElValiente.jpg", "LaBotella.jpg", "ElMundo.jpg"];
@@ -152,6 +179,7 @@
                     const idx = (b * 16) + c;
                     const cell = document.createElement('div');
                     cell.className = 'cell';
+                    cell.dataset.index = c;
                     cell.dataset.cardName = boardImages[idx];
                     cell.onclick = () => handleCellClick(cell, idx);
                     const img = document.createElement('img');
@@ -172,6 +200,48 @@
             }
         }
 
+        function applyPattern(type) {
+            document.querySelectorAll('.cell').forEach(cell => cell.classList.remove('guide-highlight'));
+            const patternBtn = document.getElementById('patternBtn');
+
+            if (type === 'none') {
+                document.body.classList.remove('pattern-mode-active');
+                patternBtn.classList.remove('active');
+                togglePanel('pattern-panel');
+                return;
+            }
+
+            document.body.classList.add('pattern-mode-active');
+            patternBtn.classList.add('active');
+
+            document.querySelectorAll('.cell').forEach(cell => {
+                const i = parseInt(cell.dataset.index);
+                const row = Math.floor(i / 4);
+                const col = i % 4;
+                let highlight = false;
+
+                if (type === 'L') highlight = (col === 0 || row === 3);
+                if (type === 'rails') highlight = (row === 1 || row === 2);
+                if (type === 'escalera') highlight = (col === 1 || col === 2);
+                if (type === 'square') highlight = (row >= 1 && row <= 2 && col >= 1 && col <= 2);
+                if (type === 'corners') highlight = ((row === 0 || row === 3) && (col === 0 || col === 3));
+                if (type === 'X') highlight = ((row >= 1 && row <= 2 && col >= 1 && col <= 2) || ((row === 0 || row === 3) && (col === 0 || col === 3)));
+                if (type === 'O') highlight = (row === 0 || row === 3 || col === 0 || col === 3);
+                if (type === 'blackout') highlight = true;
+
+                if (highlight) cell.classList.add('guide-highlight');
+            });
+            togglePanel('pattern-panel');
+        }
+
+        function togglePanel(id) { 
+            const p = document.getElementById(id); 
+            const isVisible = p.style.display === 'block';
+            document.getElementById('settings-panel').style.display = 'none';
+            document.getElementById('pattern-panel').style.display = 'none';
+            if (!isVisible) p.style.display = 'block';
+        }
+
         function openEditOverlay() {
             const grid = document.getElementById('selection-grid');
             grid.innerHTML = '';
@@ -188,7 +258,6 @@
 
         function closeEditOverlay() { document.getElementById('edit-overlay').classList.remove('open'); }
         function toggleEditMode() { isEditMode = !isEditMode; document.getElementById('editBtn').classList.toggle('active'); }
-        function toggleSettings() { const s = document.getElementById('settings-panel'); s.style.display = s.style.display === 'none' ? 'block' : 'none'; }
         function resetGame() { document.querySelectorAll('.cell.marked').forEach(el => el.classList.remove('marked')); }
         function factoryReset() { if(confirm("Reset boards?")) { boardImages = [...fullLayout]; localStorage.setItem('loteria-images', JSON.stringify(boardImages)); renderBoards(); } }
         function updateColor(v) { document.documentElement.style.setProperty('--marker-color', v + 'E6'); localStorage.setItem('loteria-color', v); }
