@@ -4,108 +4,100 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Loteria Digital</title>
-    <style>
-        :root {
-            --marker-color: rgba(230, 50, 50, 0.7);
-            --bg-color: #121212;
-            --card-border: #333;
-        }
+<style>
+    :root {
+        --marker-color: rgba(230, 50, 50, 0.7);
+        --bg-color: #121212;
+        --card-border: #333;
+    }
 
-        * {
-            box-sizing: border-box;
-        }
+    * { box-sizing: border-box; }
 
-        html, body {
-            height: 100vh;
-            width: 100vw;
-            margin: 0;
-            padding: 0;
-            overflow: hidden; /* Strictly disable scrolling */
-            background-color: var(--bg-color);
-            font-family: -apple-system, sans-serif;
-        }
+    /* Locks the entire page to the screen height */
+    html, body {
+        height: 100vh;
+        width: 100vw;
+        margin: 0;
+        padding: 0;
+        overflow: hidden; 
+        background-color: var(--bg-color);
+        font-family: -apple-system, sans-serif;
+        position: fixed; /* Prevents "bounce" scrolling on iOS */
+    }
 
-        body {
-            display: flex;
-            flex-direction: column;
-        }
+    body { display: flex; flex-direction: column; }
 
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            height: 50px;
-            padding: 0 15px;
-            color: white;
-            flex-shrink: 0;
-        }
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        height: 50px;
+        padding: 0 15px;
+        color: white;
+        flex-shrink: 0;
+    }
 
-        /* Forces 2x2 layout to fill 100% of remaining vertical space */
-        .game-container {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            grid-template-rows: repeat(2, 1fr);
-            gap: 10px;
-            padding: 10px;
-            flex-grow: 1;
-            height: calc(100vh - 50px);
-            min-height: 0; /* Important: allows grid to shrink */
-        }
+    /* Main Container: Specifically sets height to fill remaining space */
+    .game-container {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: repeat(2, 1fr);
+        gap: 8px;
+        padding: 8px;
+        flex: 1;
+        min-height: 0; /* Allows children to shrink below their content size */
+    }
 
-        /* Each Card: Forces 4x4 layout to fill its quadrant */
-        .tabla {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            grid-template-rows: repeat(4, 1fr);
-            border: 2px solid var(--card-border);
-            background-color: #fff;
-            height: 100%;
-            width: 100%;
-            overflow: hidden;
-            min-height: 0; /* Prevents expansion */
-        }
+    .tabla {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        grid-template-rows: repeat(4, 1fr);
+        border: 2px solid var(--card-border);
+        background-color: #fff;
+        height: 100%;
+        width: 100%;
+        overflow: hidden;
+    }
 
-        .cell {
-            position: relative;
-            border: 1px solid #eee;
-            cursor: pointer;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 0; 
-        }
+    .cell {
+        position: relative;
+        border: 1px solid #eee;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 0; 
+    }
 
-        .cell img {
-            width: 100%;
-            height: 100%;
-            object-fit: stretch; /* Forces image to fit the square exactly */
-            display: block;
-            pointer-events: none;
-        }
+    .cell img {
+        width: 100%;
+        height: 100%;
+        object-fit: fill; /* Forces cards into the squares without overflow */
+        display: block;
+        pointer-events: none;
+    }
 
-        /* Marker Overlay */
-        .cell.marked::after {
-            content: '';
-            position: absolute;
-            width: 65%;
-            height: 45%;
-            background-color: var(--marker-color);
-            border-radius: 50%;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.4);
-            z-index: 10;
-        }
+    .cell.marked::after {
+        content: '';
+        position: absolute;
+        width: 60%;
+        height: 40%;
+        background-color: var(--marker-color);
+        border-radius: 50%;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+        z-index: 10;
+    }
 
-        button {
-            padding: 8px 16px;
-            background-color: #d9534f;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-    </style>
+    button {
+        padding: 8px 16px;
+        background-color: #d9534f;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: bold;
+    }
+</style>
 </head>
 <body>
 
@@ -204,4 +196,5 @@
         }
     </script>
 </body>
+
 </html>
