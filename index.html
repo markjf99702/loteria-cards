@@ -13,8 +13,8 @@
             --marker-size: 75%;
             --bg-color: #000;
             --card-border: #222;
-            /* New variable for the "dimmed" state of non-playable cards */
-            --dim-overlay: rgba(0, 0, 0, 0.85); 
+            --dim-overlay: rgba(0, 0, 0, 0.85);
+            --win-glow: #28a745;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -29,11 +29,11 @@
 
         body { display: flex; flex-direction: column; align-items: center; }
 
+        /* Pushes menu below iPad status bar */
         .header {
             display: flex; justify-content: space-between; align-items: center;
             height: 40px; width: 100%; padding: 0 10px; color: #444; flex-shrink: 0;
-            z-index: 10;
-            margin-top: 25px;
+            z-index: 10; margin-top: 25px; 
         }
 
         .game-container {
@@ -44,26 +44,32 @@
             align-content: center; justify-content: center; width: 100%;
         }
 
+        .board-wrapper { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .board-label { color: #333; font-size: 0.6rem; font-weight: bold; text-transform: uppercase; }
+        
+        /* Win Visuals */
+        .board-wrapper.winner .board-label { color: var(--win-glow); }
+        .board-wrapper.winner .tabla { border-color: var(--win-glow); box-shadow: 0 0 15px var(--win-glow); }
+
         .tabla {
             display: grid; 
             grid-template-columns: repeat(4, 1fr); 
             grid-template-rows: repeat(4, 1fr);
             border: 2px solid var(--card-border); 
             background-color: #000;
-            height: 44vh; aspect-ratio: 2 / 3; 
+            height: 41vh; aspect-ratio: 2 / 3; 
             position: relative;
+            transition: all 0.3s ease;
         }
 
         .cell {
             position: relative; border: 0.5px solid #222;
             display: flex; align-items: center; justify-content: center;
             overflow: hidden; background-color: #fff;
-            transition: filter 0.3s ease;
         }
 
         .cell img { width: 100%; height: 100%; object-fit: contain; display: block; position: relative; z-index: 1; }
 
-        /* Marker logic */
         .cell.marked::after {
             content: ''; position: absolute;
             width: var(--marker-size); height: calc(var(--marker-size) * 0.7);
@@ -71,28 +77,28 @@
             box-shadow: 0 2px 6px rgba(0,0,0,0.5);
         }
 
-        /* --- UPDATED PATTERN GUIDE LOGIC --- */
-        
-        /* When pattern mode is active, apply dimming overlay to cells NOT in the pattern */
+        /* Dimming Logic for Patterns */
         body.pattern-mode-active .cell:not(.guide-highlight)::before {
             content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: var(--dim-overlay); /* Heavy dark overlay */
-            z-index: 5; pointer-events: none;
+            background-color: var(--dim-overlay); z-index: 5; pointer-events: none;
         }
+        body.pattern-mode-active .cell.guide-highlight { filter: brightness(1.1); z-index: 2; }
 
-        /* Optional: slightly brighten pattern cells to pop more */
-        body.pattern-mode-active .cell.guide-highlight {
-            filter: brightness(1.1);
-            z-index: 2; /* Ensure they sit above dimmed siblings if overlaps occur */
-        }
-
-        /* Overlays UI */
+        /* Panels */
         #settings-panel, #pattern-panel {
-            display: none; position: fixed; top: 50px; background: #111; padding: 20px; 
+            display: none; position: fixed; top: 75px; background: #111; padding: 20px; 
             z-index: 100; border: 1px solid #333; border-radius: 8px; width: 250px;
         }
         #settings-panel { left: 10px; }
         #pattern-panel { right: 10px; }
+
+        /* Win Popup */
+        #win-popup {
+            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: rgba(40, 167, 69, 0.95); color: white; padding: 30px 60px;
+            border-radius: 15px; font-size: 2rem; font-weight: bold; z-index: 1000;
+            box-shadow: 0 0 30px rgba(0,0,0,0.8); text-align: center;
+        }
 
         #edit-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -111,15 +117,16 @@
         button { padding: 6px 12px; background-color: #111; color: #666; border: 1px solid #333; border-radius: 4px; font-size: 0.8rem; }
         button.active { background-color: #d9534f; color: white; border-color: #d9534f; }
         .pattern-btn { width: 100%; margin-bottom: 5px; text-align: left; }
-        .pattern-grid { height: 10px; visibility: hidden; }
     </style>
 </head>
 <body onload="initialize()">
 
+    <div id="win-popup" onclick="this.style.display='none'">LOTERIA!</div>
+
     <div class="header">
         <div>
             <button onclick="togglePanel('settings-panel')">⚙️</button>
-            <button onclick="togglePanel('pattern-panel')" id="patternBtn">PATTERNS</button>
+            <button onclick="togglePanel('pattern-panel')" id="patternBtn">MODE: SIETE LOCO</button>
             <button id="editBtn" onclick="toggleEditMode()">EDIT</button>
         </div>
         <button onclick="resetGame()">CLEAR</button>
@@ -133,14 +140,15 @@
     </div>
 
     <div id="pattern-panel">
-        <label style="color:#666; font-size: 0.7rem;">GUIDE OVERLAYS</label><br><br>
-        <button class="pattern-btn" onclick="applyPattern('none')">None (Normal)</button>
+        <label style="color:#666; font-size: 0.7rem;">WIN LOGIC</label><br><br>
+        <button class="pattern-btn" onclick="applyPattern('none')">Siete Loco (First to 7)</button>
+        <button class="pattern-btn" onclick="applyPattern('classic')">Classic (Line/Corner/2x2)</button>
+        <hr style="border:0; border-top:1px solid #333; margin: 10px 0;">
         <button class="pattern-btn" onclick="applyPattern('L')">The "L"</button>
         <button class="pattern-btn" onclick="applyPattern('rails')">Rails (Mid Rows)</button>
-        <div class="pattern-grid"></div>
         <button class="pattern-btn" onclick="applyPattern('escalera')">Escalera (Mid Cols)</button>
         <button class="pattern-btn" onclick="applyPattern('square')">Small Square (Mid 4)</button>
-        <button class="pattern-btn" onclick="applyPattern('corners')">4 Corners</button>
+        <button class="pattern-btn" onclick="applyPattern('corners')">4 Corners Only</button>
         <button class="pattern-btn" onclick="applyPattern('X')">The "X"</button>
         <button class="pattern-btn" onclick="applyPattern('O')">The "O" (Perimeter)</button>
         <button class="pattern-btn" onclick="applyPattern('blackout')">Blackout</button>
@@ -157,16 +165,15 @@
     <script>
         let isEditMode = false;
         let currentEditIndex = null;
+        let activePatternType = 'none';
 
         const cardLibrary = ["ElGallo.jpg", "ElDiablito.jpg", "LaDama.jpg", "ElCatrin.jpg", "ElParaguas.jpg", "LaSirena.jpg", "LaEscalera.jpg", "LaBotella.jpg", "ElBarril.jpg", "ElArbol.jpg", "ElMelon.jpg", "ElValiente.jpg", "ElGorrito.jpg", "LaMuerte.jpg", "LaPera.jpg", "LaBandera.jpg", "ElBandolon.jpg", "ElVioloncello.jpg", "LaGarza.jpg", "ElPajaro.jpg", "LaMano.jpg", "LaBota.jpg", "LaLuna.jpg", "ElCotorro.jpg", "ElBorracho.jpg", "ElNegrito.jpg", "ElCorazon.jpg", "LaSandia.jpg", "ElTambor.jpg", "ElCamaron.jpg", "LasJaras.jpg", "ElMusico.jpg", "LaArana.jpg", "LaEstrella.jpg", "ElCazo.jpg", "ElMundo.jpg", "ElApache.jpg", "ElNopal.jpg", "ElAlacran.jpg", "LaRosa.jpg", "LaCalavera.jpg", "LaCampana.jpg", "ElCantarito.jpg", "ElVenado.jpg", "ElSol.jpg", "LaCorona.jpg", "LaChalupa.jpg", "ElPino.jpg", "ElPescado.jpg", "LaPalma.jpg", "LaMaceta.jpg", "ElArpa.jpg", "LaRana.jpg", "ElSoldado.jpg"];
-
         const b1 = ["ElMelon.jpg", "ElCotorro.jpg", "LaCampana.jpg", "LaArana.jpg", "LaBandera.jpg", "LaPalma.jpg", "ElTambor.jpg", "LaMaceta.jpg", "ElNegrito.jpg", "LasJaras.jpg", "LasJaras.jpg", "ElPino.jpg", "LaBota.jpg", "LaGarza.jpg", "ElCantarito.jpg", "ElPescado.jpg"];
-        const b2 = ["ElVenado.jpg", "ElParaguas.jpg", "ElCatrin.jpg", "ElMusico.jpg", "ElCazo.jpg", "LaCorona.jpg", "LaCorona.jpg", "ElValiente.jpg", "LaPera.jpg", "ElBarril.jpg", "LaEstrella.jpg", "LaSandia.jpg", "ElPajaro.jpg", "ElNegrito.jpg", "LaBotella.jpg", "ElMundo.jpg"];
-        const b3 = ["ElGallo.jpg", "ElNopal.jpg", "ElDiablito.jpg", "LaMano.jpg", "ElApache.jpg", "LaChalupa.jpg", "LaChalupa.jpg", "ElGorrito.jpg", "LaDama.jpg", "LaMuerte.jpg", "LaLuna.jpg", "ElSoldado.jpg", "ElVioloncello.jpg", "LaEstrella.jpg", "LaSirena.jpg", "ElCamaron.jpg"];
+        const b2 = ["ElVenado.jpg", "ElApache.jpg", "ElCatrin.jpg", "ElMusico.jpg", "ElCazo.jpg", "LaCorona.jpg", "LaCorona.jpg", "ElNegrito.jpg", "ElParaguas.jpg", "ElBarril.jpg", "LaEstrella.jpg", "LaSandia.jpg", "ElPajaro.jpg", "ElValiente.jpg", "LaBotella.jpg", "ElMundo.jpg"];
+        const b3 = ["ElGallo.jpg", "ElNopal.jpg", "ElDiablito.jpg", "LaMano.jpg", "LaEstrella.jpg", "LaChalupa.jpg", "LaChalupa.jpg", "ElGorrito.jpg", "LaDama.jpg", "LaMuerte.jpg", "LaLuna.jpg", "ElSoldado.jpg", "ElVioloncello.jpg", "ElApache.jpg", "LaSirena.jpg", "ElCamaron.jpg"];
         const b4 = ["LaPera.jpg", "ElBorracho.jpg", "ElSoldado.jpg", "ElBandolon.jpg", "ElAlacran.jpg", "LaRosa.jpg", "LaRosa.jpg", "LaEscalera.jpg", "ElSol.jpg", "ElValiente.jpg", "LaCalavera.jpg", "ElArpa.jpg", "LaRana.jpg", "ElArbol.jpg", "ElCorazon.jpg", "ElApache.jpg"];
 
-        const fullLayout = [...b1, ...b2, ...b3, ...b4];
-        let boardImages = JSON.parse(localStorage.getItem('loteria-images')) || fullLayout;
+        let boardImages = JSON.parse(localStorage.getItem('loteria-images')) || [...b1, ...b2, ...b3, ...b4];
 
         function initialize() { renderBoards(); loadSettings(); }
 
@@ -174,6 +181,12 @@
             const container = document.getElementById('main-container');
             container.innerHTML = '';
             for (let b = 0; b < 4; b++) {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'board-wrapper';
+                wrapper.id = `wrapper-${b}`;
+                const label = document.createElement('div');
+                label.className = 'board-label';
+                label.innerText = `Board ${b + 1}`;
                 const tabla = document.createElement('div');
                 tabla.className = 'tabla';
                 for (let c = 0; c < 16; c++) {
@@ -188,8 +201,11 @@
                     cell.appendChild(img);
                     tabla.appendChild(cell);
                 }
-                container.appendChild(tabla);
+                wrapper.appendChild(label);
+                wrapper.appendChild(tabla);
+                container.appendChild(wrapper);
             }
+            if (activePatternType !== 'none') applyPattern(activePatternType);
         }
 
         function handleCellClick(element, index) {
@@ -198,45 +214,96 @@
                 const name = element.dataset.cardName;
                 const isMarked = element.classList.contains('marked');
                 document.querySelectorAll(`.cell[data-card-name="${name}"]`).forEach(c => isMarked ? c.classList.remove('marked') : c.classList.add('marked'));
+                checkForWins();
             }
         }
 
         function applyPattern(type) {
+            activePatternType = type;
             document.querySelectorAll('.cell').forEach(cell => cell.classList.remove('guide-highlight'));
             const patternBtn = document.getElementById('patternBtn');
+            
+            // Text Label Updates
+            if (type === 'none') patternBtn.innerText = "MODE: SIETE LOCO";
+            else if (type === 'classic') patternBtn.innerText = "MODE: CLASSIC";
+            else patternBtn.innerText = `GUIDE: ${type.toUpperCase()}`;
 
-            if (type === 'none') {
+            if (type === 'none' || type === 'classic') {
                 document.body.classList.remove('pattern-mode-active');
                 patternBtn.classList.remove('active');
                 togglePanel('pattern-panel');
+                checkForWins();
                 return;
             }
 
             document.body.classList.add('pattern-mode-active');
             patternBtn.classList.add('active');
-
             document.querySelectorAll('.cell').forEach(cell => {
                 const i = parseInt(cell.dataset.index);
-                const row = Math.floor(i / 4);
-                const col = i % 4;
-                let highlight = false;
-
-                if (type === 'L') highlight = (col === 0 || row === 3);
-                if (type === 'rails') highlight = (row === 1 || row === 2);
-                if (type === 'escalera') highlight = (col === 1 || col === 2);
-                if (type === 'square') highlight = (row >= 1 && row <= 2 && col >= 1 && col <= 2);
-                if (type === 'corners') highlight = ((row === 0 || row === 3) && (col === 0 || col === 3));
-                if (type === 'X') highlight = ((row >= 1 && row <= 2 && col >= 1 && col <= 2) || ((row === 0 || row === 3) && (col === 0 || col === 3)));
-                if (type === 'O') highlight = (row === 0 || row === 3 || col === 0 || col === 3);
-                if (type === 'blackout') highlight = true;
-
-                if (highlight) cell.classList.add('guide-highlight');
+                const row = Math.floor(i / 4), col = i % 4;
+                let h = false;
+                if (type === 'L') h = (col === 0 || row === 3);
+                if (type === 'rails') h = (row === 1 || row === 2);
+                if (type === 'escalera') h = (col === 1 || col === 2);
+                if (type === 'square') h = (row >= 1 && row <= 2 && col >= 1 && col <= 2);
+                if (type === 'corners') h = ((row === 0 || row === 3) && (col === 0 || col === 3));
+                if (type === 'X') h = ((row >= 1 && row <= 2 && col >= 1 && col <= 2) || ((row === 0 || row === 3) && (col === 0 || col === 3)));
+                if (type === 'O') h = (row === 0 || row === 3 || col === 0 || col === 3);
+                if (type === 'blackout') h = true;
+                if (h) cell.classList.add('guide-highlight');
             });
             togglePanel('pattern-panel');
+            checkForWins();
+        }
+
+        function checkForWins() {
+            let winFound = false;
+            for (let b = 0; b < 4; b++) {
+                const wrapper = document.getElementById(`wrapper-${b}`);
+                const cells = Array.from(wrapper.querySelectorAll('.cell'));
+                const marked = cells.map((c, i) => c.classList.contains('marked') ? i : null).filter(i => i !== null);
+                let isWinner = false;
+
+                if (activePatternType === 'classic') isWinner = checkClassicWins(marked);
+                else if (activePatternType === 'none') isWinner = marked.length >= 7;
+                else {
+                    const targets = cells.filter(c => c.classList.contains('guide-highlight'));
+                    isWinner = targets.length > 0 && targets.every(c => c.classList.contains('marked'));
+                }
+
+                if (isWinner) {
+                    if (!wrapper.classList.contains('winner')) winFound = true;
+                    wrapper.classList.add('winner');
+                } else {
+                    wrapper.classList.remove('winner');
+                }
+            }
+            if (winFound) showWinPopup();
+        }
+
+        function checkClassicWins(marked) {
+            for (let i = 0; i < 4; i++) {
+                if ([0,1,2,3].every(j => marked.includes(i*4 + j))) return true; // Rows
+                if ([0,4,8,12].every(j => marked.includes(i + j))) return true; // Cols
+            }
+            if ([0,5,10,15].every(i => marked.includes(i))) return true; // Diags
+            if ([3,6,9,12].every(i => marked.includes(i))) return true;
+            if ([0,3,12,15].every(i => marked.includes(i))) return true; // Corners
+            const blocks = [0,1,2,4,5,6,8,9,10];
+            for (let b of blocks) {
+                if ([b, b+1, b+4, b+5].every(i => marked.includes(i))) return true; // 2x2s
+            }
+            return false;
+        }
+
+        function showWinPopup() {
+            const el = document.getElementById('win-popup');
+            el.style.display = 'block';
+            setTimeout(() => { el.style.display = 'none'; }, 3000);
         }
 
         function togglePanel(id) { 
-            const p = document.getElementById(id); 
+            const p = document.getElementById(id);
             const isVisible = p.style.display === 'block';
             document.getElementById('settings-panel').style.display = 'none';
             document.getElementById('pattern-panel').style.display = 'none';
@@ -259,8 +326,8 @@
 
         function closeEditOverlay() { document.getElementById('edit-overlay').classList.remove('open'); }
         function toggleEditMode() { isEditMode = !isEditMode; document.getElementById('editBtn').classList.toggle('active'); }
-        function resetGame() { document.querySelectorAll('.cell.marked').forEach(el => el.classList.remove('marked')); }
-        function factoryReset() { if(confirm("Reset boards?")) { boardImages = [...fullLayout]; localStorage.setItem('loteria-images', JSON.stringify(boardImages)); renderBoards(); } }
+        function resetGame() { document.querySelectorAll('.cell.marked').forEach(el => el.classList.remove('marked')); checkForWins(); }
+        function factoryReset() { if(confirm("Reset boards?")) { boardImages = [...b1, ...b2, ...b3, ...b4]; localStorage.setItem('loteria-images', JSON.stringify(boardImages)); renderBoards(); } }
         function updateColor(v) { document.documentElement.style.setProperty('--marker-color', v + 'E6'); localStorage.setItem('loteria-color', v); }
         function loadSettings() {
             const c = localStorage.getItem('loteria-color');
@@ -269,7 +336,3 @@
     </script>
 </body>
 </html>
-
-
-
-
