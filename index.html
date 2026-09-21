@@ -267,7 +267,8 @@ input:focus-visible,button:focus-visible{outline:2px solid var(--teal);outline-o
   function randomBoard(name) { var d = CARDS.map(function (c) { return c.n; }); for (var i = d.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = d[i]; d[i] = d[j]; d[j] = t; } return { id: uid(), name: name || 'Tabla', cards: d.slice(0, 16) }; }
   function fresh() { var p = { id: uid(), name: 'Mark', boards: origBoards() }; return { players: [p], current: p.id, patterns: ['linea', 'esquinas', 'cuadro'], settings: { marker: 'bean', sound: true, guide: true } }; }
   var S = fresh(), G = { called: [], announced: {} }, UI = { focus: null, sheet: null, edit: null };
-  try { var raw = localStorage.getItem(LS); if (raw) { var o = JSON.parse(raw); if (o && o.players && o.players.length) S = Object.assign(fresh(), o); } } catch (e) { }
+  var firstRun = true;
+  try { var raw = localStorage.getItem(LS); if (raw) { var o = JSON.parse(raw); if (o && o.players && o.players.length) { S = Object.assign(fresh(), o); firstRun = false; } } } catch (e) { }
   try { var rg = localStorage.getItem(LSG); if (rg) { var g = JSON.parse(rg); if (g && g.called) G = Object.assign({ called: [], announced: {} }, g); } } catch (e) { }
   function save() { try { localStorage.setItem(LS, JSON.stringify(S)); } catch (e) { } }
   function saveG() { try { localStorage.setItem(LSG, JSON.stringify(G)); } catch (e) { } }
@@ -523,6 +524,21 @@ input:focus-visible,button:focus-visible{outline:2px solid var(--teal);outline-o
     $('imOk').addEventListener('click', function () { if (existing) { existing.boards = imp.boards; S.current = existing.id; } else { var p = { id: uid(), name: imp.name, boards: imp.boards }; S.players.push(p); S.current = p.id; } save(); closeSheet(); UI.focus = null; evaluate(false); render(); toast('Playing as ' + imp.name); });
   }
 
+  // ---------- first visit ----------
+  function welcomeSheet() {
+    var sh = openSheet('<div class="hd"><h2>Who’s playing on this device?</h2></div><div class="bd stack"><p class="note">Asked once. Tablas are saved on this phone or tablet only, so what you set up here is yours and nobody else’s.</p><input id="wName" placeholder="Your name" autocomplete="off"><div class="card"><div class="eyebrow">Start with</div><div class="row" style="margin-top:8px"><button class="btn red" type="button" id="wRandom">Random tablas I’ll edit</button><button class="btn sec" type="button" id="wMark">Mark’s four tablas</button></div><p class="note" style="margin-top:8px">Either way you can change every square later under <b>Tablas</b>.</p></div></div>');
+    sh.parentElement.replaceWith(sh.parentElement.cloneNode(true)); // drop the tap-outside-to-close handler
+    function go(mark) {
+      var name = $('wName').value.trim() || (mark ? 'Mark' : 'Player');
+      var p = { id: uid(), name: name, boards: mark ? origBoards() : [randomBoard('Tabla 1'), randomBoard('Tabla 2')] };
+      S.players = [p]; S.current = p.id; save(); closeSheet(); render();
+      toast(mark ? 'Playing as ' + name : name + ', tap Tablas to set up your cards');
+    }
+    $('wRandom').addEventListener('click', function () { go(false); });
+    $('wMark').addEventListener('click', function () { go(true); });
+    $('wName').addEventListener('keydown', function (e) { if (e.key === 'Enter') go(false); });
+  }
+
   // ---------- wiring ----------
   $('callBtn').addEventListener('click', function () { pickerSheet('call', function (n) { call(n); }); });
   $('patBtn').addEventListener('click', function () { patternSheet(); });
@@ -532,7 +548,8 @@ input:focus-visible,button:focus-visible{outline:2px solid var(--teal);outline-o
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { closeSheet(); $('winbox').hidden = true; } });
   window.addEventListener('resize', layout);
   if (window.visualViewport) window.visualViewport.addEventListener('resize', layout);
-  save(); render(); maybeImport();
+  render();
+  if (firstRun && !decodeShare(location.hash)) welcomeSheet(); else { save(); maybeImport(); }
   window.addEventListener('hashchange', maybeImport);
 })();
 </script>
