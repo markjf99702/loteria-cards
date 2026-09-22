@@ -218,6 +218,10 @@ a{color:var(--teal);font-weight:700}
 .winc h2{margin:0;font:400 44px/1 var(--disp);color:var(--red)}
 .winc p{margin:10px 0 0;color:var(--ink2);font-size:15px}
 .winc .row{justify-content:center;margin-top:18px}
+.winc .who{display:flex;flex-direction:column;gap:10px;margin-top:16px}
+.winc .who input{width:100%;text-align:center}
+.winc .chips{justify-content:center}
+.linkb{background:none;border:0;padding:6px;margin-top:10px;color:var(--teal);font:700 13px var(--body);text-decoration:underline;text-underline-offset:3px}
 .toast{position:fixed;left:50%;bottom:calc(96px + var(--sab));transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--bg);padding:8px 14px;border-radius:10px;font:700 13px var(--body);opacity:0;transition:.2s;pointer-events:none;z-index:80;max-width:90vw;text-align:center}
 .toast.show{opacity:1;transform:translateX(-50%)}
 @media (max-width:700px){.bar .seg{display:none}}
@@ -294,7 +298,7 @@ a{color:var(--teal);font-weight:700}
   }
   function shuffled() { var d = CARDS.map(function (c) { return c.n; }); for (var i = d.length - 1; i > 0; i--) { var j = rand(i + 1), t = d[i]; d[i] = d[j]; d[j] = t; } return d; }
   function defaultPaper() { var ls = navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || 'en-US']; return /-(US|CA|MX|PH|CL|CO|VE|CR|GT|SV|HN|NI|PA|PR|DO)$/i.test(ls[0]) || ls[0] === 'en' ? 'letter' : 'a4'; }
-  function freshSettings() { return { speak: true, style: 'verse', voice: '', rate: 1, pace: 'normal', sound: true, awake: true }; }
+  function freshSettings() { return { speak: true, style: 'name', voice: '', rate: 1, pace: 'normal', sound: true, awake: true, check: false }; }
   function freshPrint() { return { name: '', count: 12, per: 1, paper: defaultPaper() }; }
   function fresh() { return { order: shuffled(), pos: 0, round: 1, patterns: L.CLASICO.slice(), juego: '', wins: [], print: freshPrint(), settings: freshSettings() }; }
   var C = fresh();
@@ -303,6 +307,7 @@ a{color:var(--teal);font-weight:700}
     if (o && Array.isArray(o.order) && o.order.length === 54 && o.order.slice().sort(function (a, b) { return a - b; }).every(function (n, i) { return n === i + 1; })) {
       C = Object.assign(C, o);
       C.settings = Object.assign(freshSettings(), o.settings || {});
+      if (o.settings && !('check' in o.settings)) { C.settings.style = 'name'; C.settings.check = false; save(); } // saved before Name only became the default
       C.print = Object.assign(freshPrint(), o.print || {});
       C.pos = Math.max(0, Math.min(54, o.pos | 0));
       C.round = Math.max(1, o.round | 0);
@@ -674,6 +679,7 @@ a{color:var(--teal);font-weight:700}
       '<label class="fld" id="rRow"><span>Reading speed · <b id="rateV"></b></span><input type="range" id="rate" min="0.7" max="1.3" step="0.05"></label></div>' +
       '<div class="card"><div class="eyebrow">How each card is called</div><div class="styles" id="styles"></div></div>' +
       '<div class="card"><div class="eyebrow">Time between cards</div><div class="row" style="margin-top:8px"><div class="seg" id="paceSeg"><button type="button" data-v="slow">Slow · 7s</button><button type="button" data-v="normal">Normal · 4s</button><button type="button" data-v="fast">Fast · 2s</button></div></div><p class="note" style="margin-top:8px">Counted after the card is read. ▶ turns the next card automatically; Next card turns it now.</p></div>' +
+      '<div class="card"><div class="eyebrow">When someone shouts ¡Lotería!</div><div class="row" style="margin-top:8px"><div class="seg" id="chkSeg"><button type="button" data-v="trust">Take their word</button><button type="button" data-v="check">Check the tabla</button></div></div><p class="note" style="margin-top:8px" id="chkNote"></p></div>' +
       '<div class="card"><div class="row sp"><div><b>Sounds</b><p class="note">A card snap on each turn, a fanfare for a good ¡Lotería!</p></div><button class="chip" type="button" id="sndBtn"></button></div></div>' +
       '<div class="card"><div class="row sp"><div><b>Keep the screen on</b><p class="note">While a round is going, if this device allows it.</p></div><button class="chip" type="button" id="awBtn"></button></div></div>' +
       '<div class="card" id="winsCard"></div>' +
@@ -681,9 +687,9 @@ a{color:var(--teal);font-weight:700}
       '<div class="card"><div class="eyebrow">Keyboard</div><p class="note" style="margin-top:6px">Space starts or pauses · → next card · ← puts the last card back · L checks a ¡Lotería!</p></div></div>');
     $('boardLink').href = BOARD_URL;
     var STYLES = [
-      ['verse', 'Verse, then name', '“El farol de los enamorados… La Luna.” The card turns over right away.'],
-      ['riddle', 'Adivinanza', 'Reads the verse with the card face down so the table can guess, then turns it over and says the name.'],
-      ['name', 'Name only', 'Quick and plain: “La Luna.”']
+      ['name', 'Name only', 'Just the card: “¡La Luna!” The verse still shows on screen.'],
+      ['verse', 'Verse, then name', '“El farol de los enamorados… ¡La Luna!” The card turns over right away.'],
+      ['riddle', 'Adivinanza', 'Reads the verse with the card face down so the table can guess, then turns it over and says the name.']
     ];
     function draw() {
       var has = !!TTS || PACKS.length > 0, ch = choice();
@@ -697,6 +703,8 @@ a{color:var(--teal);font-weight:700}
       $('styles').innerHTML = STYLES.map(function (s) { return '<button type="button" class="opt' + (st.style === s[0] ? ' on' : '') + '" data-v="' + s[0] + '"><b>' + s[1] + '</b><small>' + s[2] + '</small></button>'; }).join('');
       $('styles').querySelectorAll('.opt').forEach(function (b) { b.addEventListener('click', function () { st.style = b.dataset.v; save(); draw(); }); });
       document.querySelectorAll('#paceSeg button').forEach(function (b) { b.classList.toggle('on', b.dataset.v === st.pace); });
+      document.querySelectorAll('#chkSeg button').forEach(function (b) { b.classList.toggle('on', (b.dataset.v === 'check') === !!st.check); });
+      $('chkNote').textContent = st.check ? 'The ¡Lotería! button opens the checker first: type a printed tabla’s number, or tap the cards they read out.' : 'The ¡Lotería! button goes straight to the celebration and the next round. Checking a tabla is still one tap away there.';
       $('sndBtn').textContent = st.sound ? 'On' : 'Off'; $('sndBtn').classList.toggle('on', st.sound);
       $('awBtn').textContent = st.awake ? 'On' : 'Off'; $('awBtn').classList.toggle('on', st.awake);
       winsCard();
@@ -717,10 +725,11 @@ a{color:var(--teal);font-weight:700}
     $('vSel').addEventListener('change', function () { st.voice = this.value; save(); draw(); });
     $('vTest').addEventListener('click', function () {
       if (R.phase === 'speaking') { toast('Try it between cards'); return; }
-      unlock(); say([{ n: 23, part: 'all', text: 'El farol de los enamorados. La Luna.' }], null);
+      unlock(); say([st.style === 'name' ? { n: 23, part: 'name', text: 'La Luna' } : { n: 23, part: 'all', text: 'El farol de los enamorados. La Luna.' }], null);
     });
     $('rate').addEventListener('input', function () { st.rate = parseFloat(this.value) || 1; save(); $('rateV').textContent = st.rate === 1 ? 'normal' : st.rate < 1 ? 'slower' : 'faster'; });
     document.querySelectorAll('#paceSeg button').forEach(function (b) { b.addEventListener('click', function () { setPace(b.dataset.v); draw(); }); });
+    document.querySelectorAll('#chkSeg button').forEach(function (b) { b.addEventListener('click', function () { st.check = b.dataset.v === 'check'; save(); draw(); }); });
     $('sndBtn').addEventListener('click', function () { st.sound = !st.sound; save(); draw(); if (st.sound) snap(); });
     $('awBtn').addEventListener('click', function () { st.awake = !st.awake; save(); wake(st.awake && C.pos > 0 && C.pos < 54); draw(); });
     $('stx').addEventListener('click', closeSheet);
@@ -748,15 +757,43 @@ a{color:var(--teal);font-weight:700}
     var ago = C.pos - when, c = card(C.order[when - 1]).name;
     return ago === 0 ? 'It finished on the card just called, ' + c + '.' : 'It was already good ' + plural(ago, 'card', 'cards') + ' ago, on ' + c + ' — the ' + ordinal(when) + ' card.';
   }
-  function verifySheet() {
-    var was = R.playing; pause(); hush();
+  function stopCalling() {
+    pause(); hush();
     if (R.phase === 'speaking') { R.phase = 'idle'; if (R.down) reveal(); }
+    if (R.opening) { R.opening = false; renderCaption(); }
+    renderBar();
+  }
+  function shout() { if (C.settings.check) verifySheet(); else claim(); }
+  // Take their word: straight to the celebration, with the winner's name and the next round.
+  function claim() {
+    var was = R.playing; stopCalling(); cheer();
+    var box = $('winbox'), r = C.round, names = [], seen = {};
+    for (var i = C.wins.length - 1; i >= 0 && names.length < 8; i--) { var w = C.wins[i].who, k = w && w.toLowerCase(); if (w && !seen[k]) { seen[k] = 1; names.push(w); } }
+    box.innerHTML = '<div class="winbg"><div class="winc"><h2>¡Lotería!</h2><p>Round ' + r + ' · ' + esc(L.gameName(C.patterns)) + ' · ' + plural(C.pos, 'card', 'cards') + ' called</p>' +
+      '<div class="who"><input id="clWho" placeholder="Who won? (optional)" autocomplete="off" maxlength="30" aria-label="Who won">' + (names.length ? '<div class="chips" id="clNames">' + names.map(function (n) { return '<button type="button" class="chip">' + esc(n) + '</button>'; }).join('') + '</div>' : '') + '</div>' +
+      '<div class="row"><button class="btn red" type="button" id="clNew">Shuffle for round ' + (r + 1) + '</button><button class="btn sec" type="button" id="clBack">Keep calling</button></div>' +
+      '<button type="button" class="linkb" id="clCheck">Check a tabla first</button></div></div>';
+    box.hidden = false;
+    box.querySelectorAll('#clNames .chip').forEach(function (b) { b.addEventListener('click', function () { var on = !b.classList.contains('on'); box.querySelectorAll('#clNames .chip').forEach(function (x) { x.classList.remove('on'); }); b.classList.toggle('on', on); $('clWho').value = on ? b.textContent : ''; }); });
+    $('clWho').addEventListener('input', function () { box.querySelectorAll('#clNames .chip').forEach(function (x) { x.classList.toggle('on', x.textContent === $('clWho').value.trim()); }); });
+    $('clNew').addEventListener('click', function () {
+      var who = $('clWho').value.trim();
+      C.wins.push({ round: r, who: who, how: L.gameName(C.patterns), tabla: '', at: C.pos, t: Date.now() }); save();
+      box.hidden = true; newRound(); toast((who ? who + ' wins round ' + r + ' · ' : '') + 'Round ' + C.round + ' is shuffled — tap ▶ to start');
+    });
+    $('clBack').addEventListener('click', function () { box.hidden = true; UI.cheered = 0; if (was) play(); });
+    $('clCheck').addEventListener('click', function () { box.hidden = true; verifySheet(was); });
+    $('clNew').focus();
+  }
+  function cheer() { if (UI.cheered === C.round) return; UI.cheered = C.round; fanfare(); if (voiceOn()) say([{ clip: 'loteria', text: '¡Lotería!' }], null); }
+  function verifySheet(resume) {
+    var was = arguments.length ? resume : R.playing; stopCalling();
     var V = { mode: C.juego ? 'printed' : 'cards', picked: [], how: '', tabla: '', q: '' };
     openSheet('<div class="hd"><h2>¡Lotería! — check it</h2><button class="btn sec sm" type="button" id="vfx">Keep calling</button></div><div class="bd stack">' +
       '<div class="row sp" style="flex-wrap:wrap"><div class="seg" id="vfSeg"><button type="button" data-v="printed">Printed tabla</button><button type="button" data-v="cards">Card by card</button></div><span class="note">' + esc(L.gameName(C.patterns)) + ' · ' + plural(C.pos, 'card', 'cards') + ' called</span></div>' +
       '<div id="vfBody"></div>' +
       '<div class="card stack"><div class="winrow"><input id="vfWho" placeholder="Who won? (optional)" autocomplete="off" maxlength="30"><button class="btn red" type="button" id="vfWin">¡Buena! New round</button></div></div></div>');
-    UI.onClose = function () { if (was && !UI.won) play(); UI.won = false; };
+    UI.onClose = function () { if (!UI.won) { UI.cheered = 0; if (was) play(); } UI.won = false; };
     function body() {
       document.querySelectorAll('#vfSeg button').forEach(function (b) { b.classList.toggle('on', b.dataset.v === V.mode); });
       if (V.mode === 'printed') {
@@ -828,11 +865,12 @@ a{color:var(--teal);font-weight:700}
     body();
   }
   function celebrate(who) {
-    fanfare();
-    var box = $('winbox'), r = C.round;
+    var box = $('winbox'), r = C.round, first = UI.cheered !== r;
+    if (first) { UI.cheered = r; fanfare(); }
     box.innerHTML = '<div class="winbg"><div class="winc"><h2>¡Lotería!</h2><p>' + (who ? '<b>' + esc(who) + '</b> wins round ' + r : 'Round ' + r + ' is won') + ' after ' + plural(C.pos, 'card', 'cards') + '.</p><div class="row"><button class="btn red" type="button" id="celOk">Shuffle for round ' + (r + 1) + '</button></div></div></div>';
     box.hidden = false;
-    if (voiceOn()) say([{ clip: 'loteria', text: '¡Lotería!', gap: 200 }].concat(who && !choice().pack ? [{ text: 'Felicidades, ' + who + '.' }] : []), null);
+    var lines = (first ? [{ clip: 'loteria', text: '¡Lotería!', gap: 200 }] : []).concat(who && !choice().pack ? [{ text: 'Felicidades, ' + who + '.' }] : []);
+    if (voiceOn() && lines.length) say(lines, null);
     $('celOk').addEventListener('click', function () { box.hidden = true; newRound(); patternSheet('Round ' + C.round + ' — what are we playing?'); });
     $('celOk').focus();
   }
@@ -1066,7 +1104,7 @@ a{color:var(--teal);font-weight:700}
   $('playBtn').addEventListener('click', function () { if (C.pos >= 54) newRoundAsk(); else if (R.playing) pause(); else play(); });
   $('nextBtn').addEventListener('click', next);
   $('backBtn').addEventListener('click', back);
-  $('lotBtn').addEventListener('click', verifySheet);
+  $('lotBtn').addEventListener('click', shout);
   $('patBtn').addEventListener('click', function () { patternSheet(); });
   $('sabBtn').addEventListener('click', sabanaSheet);
   $('printBtn').addEventListener('click', printSheet);
@@ -1080,7 +1118,7 @@ a{color:var(--teal);font-weight:700}
     if (e.key === ' ' && tag !== 'BUTTON') { e.preventDefault(); $('playBtn').click(); }
     else if (e.key === 'ArrowRight') { e.preventDefault(); if (!R.opening) next(); }
     else if (e.key === 'ArrowLeft') { e.preventDefault(); back(); }
-    else if (e.key === 'l' || e.key === 'L') { e.preventDefault(); verifySheet(); }
+    else if (e.key === 'l' || e.key === 'L') { e.preventDefault(); shout(); }
   });
   var rT; function relayout() { clearTimeout(rT); rT = setTimeout(function () { picado(); layout(); }, 60); }
   window.addEventListener('resize', relayout);
