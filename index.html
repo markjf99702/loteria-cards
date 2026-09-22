@@ -110,6 +110,7 @@ input:focus-visible,button:focus-visible{outline:2px solid var(--teal);outline-o
 .btn.red{background:var(--red);border-color:var(--red);color:var(--red-ink)}
 .btn.sm{padding:6px 10px;font-size:13px}
 .note{color:var(--ink2);font-size:13.5px}
+a{color:var(--teal);font-weight:700}
 .eyebrow{font:600 11px var(--body);letter-spacing:.12em;text-transform:uppercase;color:var(--ink3)}
 .card{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px 14px;box-shadow:var(--shadow)}
 .stack{display:flex;flex-direction:column;gap:12px}
@@ -165,94 +166,16 @@ input:focus-visible,button:focus-visible{outline:2px solid var(--teal);outline-o
 <div id="sheet" hidden></div>
 <div id="winbox" hidden></div>
 <div class="toast" id="toast" role="status"></div>
+<script src="deck.js" data-cards=""></script>
 <script>(function () {
   'use strict';
   var $ = function (id) { return document.getElementById(id); };
-  var CARDS = [
-    ['ElGallo', 'El Gallo', 'El que le cantó a San Pedro no le volverá a cantar.'],
-    ['ElDiablito', 'El Diablito', 'Pórtate bien cuatito, si no te lleva el coloradito.'],
-    ['LaDama', 'La Dama', 'Puliendo el paso, por toda la calle real.'],
-    ['ElCatrin', 'El Catrín', 'Don Ferruco en la alameda, su bastón quería tirar.'],
-    ['ElParaguas', 'El Paraguas', 'Para el sol y para el agua.'],
-    ['LaSirena', 'La Sirena', 'Con los cantos de sirena, no te vayas a marear.'],
-    ['LaEscalera', 'La Escalera', 'Súbeme paso a pasito, no quieras pegar brinquitos.'],
-    ['LaBotella', 'La Botella', 'La herramienta del borracho.'],
-    ['ElBarril', 'El Barril', 'Tanto bebió el albañil, que quedó como barril.'],
-    ['ElArbol', 'El Árbol', 'El que a buen árbol se arrima, buena sombra le cobija.'],
-    ['ElMelon', 'El Melón', 'Me lo das o me lo quitas.'],
-    ['ElValiente', 'El Valiente', 'Por qué le corres cobarde, trayendo tan buen puñal.'],
-    ['ElGorrito', 'El Gorrito', 'Ponle su gorrito al nene, no se nos vaya a resfriar.'],
-    ['LaMuerte', 'La Muerte', 'La muerte tilica y flaca.'],
-    ['LaPera', 'La Pera', 'El que espera, desespera.'],
-    ['LaBandera', 'La Bandera', 'Verde, blanco y colorado, la bandera del soldado.'],
-    ['ElBandolon', 'El Bandolón', 'Tocando su bandolón, está el mariachi Simón.'],
-    ['ElVioloncello', 'El Violoncello', 'Creciendo se fue hasta el cielo, y como no fue violín, tuvo que ser violoncello.'],
-    ['LaGarza', 'La Garza', 'Al otro lado del río tengo mi banco de arena, donde se sienta mi chata, pico de garza morena.'],
-    ['ElPajaro', 'El Pájaro', 'Tú me traes a puros brincos, como pájaro en la rama.'],
-    ['LaMano', 'La Mano', 'La mano de un criminal.'],
-    ['LaBota', 'La Bota', 'Una bota igual que la otra.'],
-    ['LaLuna', 'La Luna', 'El farol de los enamorados.'],
-    ['ElCotorro', 'El Cotorro', 'Cotorro, cotorro, saca la pata y empiézame a platicar.'],
-    ['ElBorracho', 'El Borracho', 'A qué borracho tan necio, ya no lo puedo aguantar.'],
-    ['ElNegrito', 'El Negrito', 'El que se comió el azúcar.'],
-    ['ElCorazon', 'El Corazón', 'No me extrañes, corazón, que regreso en el camión.'],
-    ['LaSandia', 'La Sandía', 'La barriga que Juan tenía, era empacho de sandía.'],
-    ['ElTambor', 'El Tambor', 'No te arrugues, cuero viejo, que te quiero pa’ tambor.'],
-    ['ElCamaron', 'El Camarón', 'Camarón que se duerme, se lo lleva la corriente.'],
-    ['LasJaras', 'Las Jaras', 'Las jaras del indio Adán, donde pegan, dan.'],
-    ['ElMusico', 'El Músico', 'El músico trompas de hule, ya no me quiere tocar.'],
-    ['LaArana', 'La Araña', 'Atarántamela a palos, no me la dejes llegar.'],
-    ['ElSoldado', 'El Soldado', 'Uno, dos y tres, el soldado p’al cuartel.'],
-    ['LaEstrella', 'La Estrella', 'La guía de los marineros.'],
-    ['ElCazo', 'El Cazo', 'El caso que te hago es poco.'],
-    ['ElMundo', 'El Mundo', 'Este mundo es una bola, y nosotros un bolón.'],
-    ['ElApache', 'El Apache', '¡Ah, Chihuahua! Cuánto apache con pantalón y huarache.'],
-    ['ElNopal', 'El Nopal', 'Al nopal lo van a ver, nomás cuando tiene tunas.'],
-    ['ElAlacran', 'El Alacrán', 'El que con la cola pica, le dan una paliza.'],
-    ['LaRosa', 'La Rosa', 'Rosita, Rosaura, ven que te quiero ahora.'],
-    ['LaCalavera', 'La Calavera', 'Al pasar por el panteón, me encontré un calaverón.'],
-    ['LaCampana', 'La Campana', 'Tú con la campana y yo con tu hermana.'],
-    ['ElCantarito', 'El Cantarito', 'Tanto va el cántaro al agua, que se quiebra y te moja las enaguas.'],
-    ['ElVenado', 'El Venado', 'Saltando va buscando, pero no ve nada.'],
-    ['ElSol', 'El Sol', 'La cobija de los pobres.'],
-    ['LaCorona', 'La Corona', 'El sombrero de los reyes.'],
-    ['LaChalupa', 'La Chalupa', 'Rema que rema Lupita, sentada en su chalupita.'],
-    ['ElPino', 'El Pino', 'Fresco y oloroso, en todo tiempo hermoso.'],
-    ['ElPescado', 'El Pescado', 'El que por la boca muere, aunque mudo fuere.'],
-    ['LaPalma', 'La Palma', 'Palmero, sube a la palma y bájame un coco real.'],
-    ['LaMaceta', 'La Maceta', 'El que nace pa’ maceta, no sale del corredor.'],
-    ['ElArpa', 'El Arpa', 'Arpa vieja de mi suegra, ya no sirves pa’ tocar.'],
-    ['LaRana', 'La Rana', 'Al ver a la verde rana, qué brinco pegó tu hermana.']
-  ].map(function (c, i) { return { n: i + 1, f: c[0], name: c[1], verse: c[2], key: fold(c[1]) }; });
-  var BYFILE = {}; CARDS.forEach(function (c) { BYFILE[c.f] = c.n; });
-  function card(n) { return CARDS[n - 1]; }
-  var CARD_DIR = '';
-  function src(n) { return CARD_DIR + card(n).f + '.jpg'; }
-  function fold(s) { return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9 ]/g, ''); }
+  var L = window.Loteria, CARDS = L.CARDS, BYFILE = L.BYFILE, card = L.card, src = L.src, fold = L.fold;
 
   // ---------- patterns ----------
-  function rows() { var o = []; for (var r = 0; r < 4; r++) o.push([r * 4, r * 4 + 1, r * 4 + 2, r * 4 + 3]); return o; }
-  function cols() { var o = []; for (var c = 0; c < 4; c++) o.push([c, c + 4, c + 8, c + 12]); return o; }
-  var SQ = [0, 1, 2, 4, 5, 6, 8, 9, 10].map(function (b) { return [b, b + 1, b + 4, b + 5]; });
-  var ALL = []; for (var i = 0; i < 16; i++) ALL.push(i);
-  var PATS = [
-    { id: 'clasico', name: 'Clásico', sub: '4 in a row, 4 corners, or 4 in a square', combo: ['linea', 'esquinas', 'cuadro'], show: [0, 1, 2, 3, 12, 15, 9, 10] },
-    { id: 'linea', name: 'Línea', sub: 'any row, column or diagonal', sets: rows().concat(cols(), [[0, 5, 10, 15], [3, 6, 9, 12]]), show: [0, 1, 2, 3] },
-    { id: 'esquinas', name: 'Esquinas', sub: 'the four corners', sets: [[0, 3, 12, 15]] },
-    { id: 'centro', name: 'Centro', sub: 'the middle four', sets: [[5, 6, 9, 10]] },
-    { id: 'cuadro', name: 'Cuadrito', sub: 'any 2×2 block', sets: SQ, show: [5, 6, 9, 10] },
-    { id: 'ele', name: 'La Ele', sub: 'left column + bottom row', sets: [[0, 4, 8, 12, 13, 14, 15]] },
-    { id: 'equis', name: 'La Equis', sub: 'both diagonals', sets: [[0, 5, 10, 15, 3, 6, 9, 12]] },
-    { id: 'marco', name: 'El Marco', sub: 'the outer ring', sets: [[0, 1, 2, 3, 4, 7, 8, 11, 12, 13, 14, 15]] },
-    { id: 'rieles', name: 'Rieles', sub: 'the two middle rows', sets: [[4, 5, 6, 7, 8, 9, 10, 11]] },
-    { id: 'escalera', name: 'Escalera', sub: 'the two middle columns', sets: [[1, 2, 5, 6, 9, 10, 13, 14]] },
-    { id: 'siete', name: 'Siete Loco', sub: 'any seven, anywhere', min: 7, show: [0, 5, 6, 9, 10, 15, 3] },
-    { id: 'llena', name: 'Tabla Llena', sub: 'every card', sets: [ALL] }
-  ];
-  function pat(id) { return PATS.filter(function (p) { return p.id === id; })[0]; }
-  var CLASICO = ['linea', 'esquinas', 'cuadro'];
-  function isClasico() { return S.patterns.length === 3 && CLASICO.every(function (x) { return S.patterns.indexOf(x) >= 0; }); }
-  function gameName() { if (isClasico()) return 'Clásico'; var names = S.patterns.map(function (id) { var q = pat(id); return q ? q.name : id; }); return names.length ? (names.length > 2 ? names[0] + ' +' + (names.length - 1) : names.join(' · ')) : 'Pick a game'; }
+  var PATS = L.PATS, ALL = L.ALL, CLASICO = L.CLASICO, pat = L.pat;
+  function isClasico() { return L.isClasico(S.patterns); }
+  function gameName() { return L.gameName(S.patterns); }
 
   // ---------- state ----------
   var LS = 'loteria.v1', LSG = 'loteria.game';
@@ -291,16 +214,7 @@ input:focus-visible,button:focus-visible{outline:2px solid var(--teal);outline-o
   function rotFor(b, c) { return ((b * 37 + c * 53) % 70) - 35; }
 
   // ---------- wins ----------
-  function boardMarks(bd) { var m = []; bd.cards.forEach(function (n, i) { if (isCalled(n)) m.push(i); }); return m; }
-  function checkBoard(bd) {
-    var m = boardMarks(bd), hits = [];
-    S.patterns.forEach(function (pid) {
-      var p = pat(pid); if (!p) return;
-      if (p.min) { if (m.length >= p.min) hits.push({ pat: p, cells: m.slice() }); return; }
-      for (var i = 0; i < p.sets.length; i++) { var s = p.sets[i]; if (s.every(function (c) { return m.indexOf(c) >= 0; })) { hits.push({ pat: p, cells: s }); return; } }
-    });
-    return hits;
-  }
+  function checkBoard(bd) { return L.check(bd.cards, isCalled, S.patterns); }
   function guideCells() {
     var fixed = S.patterns.map(pat).filter(function (p) { return p && !p.min && p.sets.length === 1 && p.id !== 'llena'; });
     if (!fixed.length || fixed.length !== S.patterns.length) return null;
@@ -451,6 +365,7 @@ input:focus-visible,button:focus-visible{outline:2px solid var(--teal);outline-o
       '<div class="card"><div class="row" style="justify-content:space-between"><div><b>Sounds</b><div class="note">A bean drop on each mark, a little fanfare on a win.</div></div><button class="chip" type="button" id="sndBtn"></button></div></div>' +
       '<div class="card"><div class="row" style="justify-content:space-between"><div><b>Dim squares outside the pattern</b><div class="note">Only for fixed shapes like Esquinas or La Ele.</div></div><button class="chip" type="button" id="gdBtn"></button></div></div>' +
       '<div class="card"><div class="eyebrow">Who is playing on this device</div><div class="row" id="plist" style="margin-top:8px"></div><div class="row" style="margin-top:10px"><input id="pnew" placeholder="Add a person" style="flex:1"><button class="btn sm" type="button" id="padd">Add</button></div><p class="note" style="margin-top:8px">Each person keeps their own tablas. To send someone your tablas, use <b>Share</b> on the Tablas screen.</p></div>' +
+      '<div class="card"><div class="eyebrow">Calling the game?</div><p class="note" style="margin-top:6px"><a href="cantor.html">El Cantor</a> shuffles a deck and reads each card aloud, prints numbered tablas, and checks a ¡Lotería! by tabla number.</p></div>' +
       '<div class="card"><div class="eyebrow">About</div><p class="note" style="margin-top:6px">Everything lives on this device — nothing is sent anywhere. Reload-safe: the round survives a refresh.</p></div></div>');
     function draw() {
       document.querySelectorAll('#mkseg button').forEach(function (b) { b.classList.toggle('on', b.dataset.v === st.marker); });
@@ -468,7 +383,7 @@ input:focus-visible,button:focus-visible{outline:2px solid var(--teal);outline-o
 
   function tablasSheet() {
     var p = player();
-    openSheet('<div class="hd"><input id="tbName" value="' + esc(p.name) + '" aria-label="Player name" style="font:400 18px var(--disp);flex:1"><button class="btn sec sm" type="button" id="tbShare">Share</button><button class="btn sm" type="button" id="tbx">Done</button></div><div class="bd stack"><p class="note">Tap any square to change its card. Doubles are fine (house rules) — when that card is called, both squares get a bean. Names are editable.</p><div class="edb" id="edb"></div><div class="row"><button class="btn sec sm" type="button" id="tbAdd">+ Add a tabla</button><button class="btn sec sm" type="button" id="tbOrig">Restore the original four</button><button class="btn sec sm" type="button" id="tbDel" style="color:var(--red)">Remove this person</button></div></div>');
+    openSheet('<div class="hd"><input id="tbName" value="' + esc(p.name) + '" aria-label="Player name" style="font:400 18px var(--disp);flex:1"><button class="btn sec sm" type="button" id="tbShare">Share</button><button class="btn sm" type="button" id="tbx">Done</button></div><div class="bd stack"><p class="note">Tap any square to change its card. Doubles are fine (house rules) — when that card is called, both squares get a bean. Names are editable.</p><div class="edb" id="edb"></div><div class="row"><button class="btn sec sm" type="button" id="tbAdd">+ Add a tabla</button><button class="btn sec sm" type="button" id="tbPrinted">+ A printed tabla</button><button class="btn sec sm" type="button" id="tbOrig">Restore the original four</button><button class="btn sec sm" type="button" id="tbDel" style="color:var(--red)">Remove this person</button></div></div>');
     function draw() {
       var host = $('edb'); host.innerHTML = '';
       p.boards.forEach(function (bd, bi) {
@@ -490,12 +405,31 @@ input:focus-visible,button:focus-visible{outline:2px solid var(--teal);outline-o
         host.appendChild(w);
       });
     }
+    $('tbPrinted').addEventListener('click', function () { if (p.boards.length >= 6) { toast('Six tablas is plenty'); return; } printedSheet(p); });
     $('tbAdd').addEventListener('click', function () { if (p.boards.length >= 6) { toast('Six tablas is plenty'); return; } p.boards.push(randomBoard('Tabla ' + (p.boards.length + 1))); save(); draw(); render(); });
     $('tbOrig').addEventListener('click', function () { p.boards = origBoards(); save(); draw(); evaluate(false); render(); });
-    $('tbDel').addEventListener('click', function () { if (S.players.length < 2) { toast('Add someone else first — the app needs one player'); return; } if (!confirm('Remove ' + p.name + ' and their tablas from this device?')) return; S.players = S.players.filter(function (x) { return x.id !== p.id; }); S.current = S.players[0].id; save(); closeSheet(); UI.focus = null; evaluate(false); render(); });
+    var delArmed = false;
+    $('tbDel').addEventListener('click', function () { if (S.players.length < 2) { toast('Add someone else first — the app needs one player'); return; } if (!delArmed) { delArmed = true; this.textContent = 'Tap again to remove ' + p.name; return; } S.players = S.players.filter(function (x) { return x.id !== p.id; }); S.current = S.players[0].id; save(); closeSheet(); UI.focus = null; evaluate(false); render(); });
     $('tbName').addEventListener('change', function () { p.name = $('tbName').value.trim() || p.name; $('tbName').value = p.name; save(); render(); });
     $('tbShare').addEventListener('click', shareSheet);
     $('tbx').addEventListener('click', closeSheet); draw();
+  }
+
+  // ---------- printed tablas (from El Cantor) ----------
+  function printedSheet(p) {
+    openSheet('<div class="hd"><h2>Add a printed tabla</h2><button class="btn sec sm" type="button" id="ptx">Cancel</button></div><div class="bd stack"><p class="note">Tablas printed from El Cantor carry a juego name along the bottom and a number at the top. Type both and the same tabla shows up here, square for square — so the caller can still check it by number.</p><div class="row"><input id="ptJ" placeholder="Juego, like CANELA" autocomplete="off" autocapitalize="characters" spellcheck="false" style="flex:1 1 10em;text-transform:uppercase;font-weight:700"><input id="ptN" placeholder="No." inputmode="numeric" autocomplete="off" maxlength="3" aria-label="Tabla number" style="width:5.5em"><button class="btn red" type="button" id="ptAdd" disabled>Add it</button></div><div class="edb"><div id="ptPrev"></div></div></div>');
+    var pick = null;
+    function draw() {
+      var name = L.juegoName($('ptJ').value), k = parseInt($('ptN').value, 10), host = $('ptPrev');
+      pick = name && k >= 1 && k <= 999 ? { name: name + ' ' + k, cards: L.juegoTabla(name, k) } : null;
+      $('ptAdd').disabled = !pick;
+      host.innerHTML = pick ? '<div class="tabla" style="--bw:100%"><div class="lbl"><span class="k">' + esc(pick.name) + '</span></div><div class="eg">' + pick.cards.map(function (n) { return '<div class="cell"><img src="' + src(n) + '" alt="' + esc(card(n).name) + '" draggable="false"></div>'; }).join('') + '</div></div>' : '';
+    }
+    $('ptJ').addEventListener('input', draw);
+    $('ptN').addEventListener('input', function () { this.value = this.value.replace(/\D/g, ''); draw(); });
+    $('ptAdd').addEventListener('click', function () { if (!pick) return; p.boards.push({ id: uid(), name: pick.name, cards: pick.cards }); save(); closeSheet(); evaluate(true); render(); tablasSheet(); toast(pick.name + ' added'); });
+    $('ptx').addEventListener('click', function () { closeSheet(); tablasSheet(); });
+    if (!('ontouchstart' in window)) $('ptJ').focus();
   }
 
   // ---------- share / import ----------
@@ -544,7 +478,13 @@ input:focus-visible,button:focus-visible{outline:2px solid var(--teal);outline-o
   $('patBtn').addEventListener('click', function () { patternSheet(); });
   $('tablasBtn').addEventListener('click', tablasSheet);
   $('setBtn').addEventListener('click', settingsSheet);
-  $('clearBtn').addEventListener('click', function () { if (!G.called.length) return; if (G.called.length < 3 || confirm('Clear all ' + G.called.length + ' called cards for a new round?')) clearRound(); });
+  $('clearBtn').addEventListener('click', function () {
+    if (!G.called.length) return;
+    if (G.called.length < 3) { clearRound(); return; }
+    openSheet('<div class="hd"><h2>Clear the round?</h2></div><div class="bd stack"><p class="note">Takes the beans off all ' + G.called.length + ' called cards so you can start the next round.</p><div class="row"><button class="btn red" type="button" id="clOk">Clear for a new round</button><button class="btn sec" type="button" id="clNo">Keep playing</button></div></div>');
+    $('clOk').addEventListener('click', function () { closeSheet(); clearRound(); });
+    $('clNo').addEventListener('click', closeSheet);
+  });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { closeSheet(); $('winbox').hidden = true; } });
   window.addEventListener('resize', layout);
   if (window.visualViewport) window.visualViewport.addEventListener('resize', layout);
