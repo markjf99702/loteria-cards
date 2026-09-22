@@ -14,7 +14,8 @@ A play-along board for the iPad or phone. Someone calls the cards; you tap **Can
 
 El Cantor replaces the deck and the person reading it.
 
-- Shuffles the 54 cards and turns them over one at a time, reading each verse and name aloud in Spanish (the device's own voice). Tap ▶ to call on its own at a slow, normal or fast pace, or turn each card by hand.
+- Shuffles the 54 cards and turns them over one at a time, reading each verse and name aloud in Spanish. Tap ▶ to call on its own at a slow, normal or fast pace, or turn each card by hand.
+- Plays recorded voices listed in `audio/voices.json` when there are any (one clip per card: verse, a breath, the name), so every device sounds the same; otherwise it uses the device's own Spanish voice.
 - **Adivinanza** mode reads the verse with the card face down so the table can guess before it turns over.
 - The **sábana** shows all 54 cards, lit in the order they were called.
 - **Print tablas** makes a PDF of numbered tablas to print at home (one big or two per page, Letter or A4). A set — a *juego* — is built from its name, so `CANELA` tabla 7 is always the same tabla.

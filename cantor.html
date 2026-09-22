@@ -323,7 +323,10 @@ a{color:var(--teal);font-weight:700}
 
   // ---------- sound ----------
   var AC = null;
-  function ac() { if (!C.settings.sound) return null; try { if (!AC) AC = new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === 'suspended') AC.resume(); return AC; } catch (e) { return null; } }
+  function ctx() { try { if (!AC) AC = new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === 'suspended') AC.resume(); return AC; } catch (e) { return null; } }
+  function ac() { return C.settings.sound ? ctx() : null; }
+  // Called from a tap: lets audio start, and on iPhone plays it even with the ring switch on silent.
+  function unlock() { ctx(); try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch (e) { } }
   function snap() {
     var a = ac(); if (!a) return;
     var n = Math.floor(a.sampleRate * 0.09), buf = a.createBuffer(1, n, a.sampleRate), d = buf.getChannelData(0);
@@ -335,28 +338,87 @@ a{color:var(--teal);font-weight:700}
   function fanfare() { var a = ac(); if (!a) return; var t = a.currentTime; [523, 659, 784, 1047, 784, 1047].forEach(function (f, i) { var o = a.createOscillator(), g = a.createGain(); o.type = 'square'; o.frequency.value = f; var s = t + i * 0.11; g.gain.setValueAtTime(0.0001, s); g.gain.exponentialRampToValueAtTime(0.12, s + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, s + (i === 5 ? 0.5 : 0.12)); o.connect(g); g.connect(a.destination); o.start(s); o.stop(s + 0.55); }); }
 
   // ---------- voice ----------
-  var TTS = window.speechSynthesis || null, VOICES = [];
+  // Recorded voices listed in audio/voices.json sound right on every device. Each card has one
+  // clip — verse, a breath, name — and the manifest says where the verse ends and the name
+  // starts, so Adivinanza can stop between them. The device's own speech engine is the fallback.
+  var PACKS = [], TTS = window.speechSynthesis || null, VOICES = [];
+  var UI = { onVoices: null, sheet: null };
   function rank(v) { var l = String(v.lang || '').replace('_', '-').toLowerCase(); return l === 'es-mx' ? 0 : l === 'es-us' ? 1 : l === 'es-419' ? 2 : (l === 'es' || l.indexOf('es-') === 0) ? 3 : 9; }
   function loadVoices() {
     if (!TTS) return;
     try { VOICES = TTS.getVoices().filter(function (v) { return rank(v) < 9; }).sort(function (a, b) { return rank(a) - rank(b) || (b.localService ? 1 : 0) - (a.localService ? 1 : 0) || a.name.localeCompare(b.name); }); } catch (e) { VOICES = []; }
     if (UI.onVoices) UI.onVoices();
   }
-  var UI = { onVoices: null, sheet: null };
   if (TTS) { if (TTS.addEventListener) TTS.addEventListener('voiceschanged', loadVoices); else TTS.onvoiceschanged = loadVoices; }
-  function voice() { var want = C.settings.voice; return VOICES.filter(function (v) { return v.voiceURI === want; })[0] || VOICES[0] || null; }
-  function voiceOn() { return !!TTS && C.settings.speak; }
-  function speak(text, done) {
-    var token = ++R.token, fired = false, fb = 0;
-    function fin() { if (fired) return; fired = true; clearTimeout(fb); if (token === R.token && done) done(); }
-    if (!voiceOn()) { fb = setTimeout(fin, 1300 + text.length * 32); return; }
-    var u = new SpeechSynthesisUtterance(text), v = voice();
-    if (v) { u.voice = v; u.lang = v.lang; } else u.lang = 'es-MX';
-    u.rate = C.settings.rate; u.onend = fin; u.onerror = fin;
-    fb = setTimeout(fin, 2500 + text.length * 110 / C.settings.rate);
-    try { if (TTS.speaking || TTS.pending) TTS.cancel(); TTS.speak(u); } catch (e) { fin(); }
+  if (window.fetch) fetch('audio/voices.json').then(function (r) { return r.ok ? r.json() : null; }).then(function (m) {
+    PACKS = ((m && m.voices) || []).filter(function (p) { return p && /^[a-z0-9-]+$/.test(p.id) && p.cards; });
+    if (UI.onVoices) UI.onVoices();
+    renderBar();
+  }).catch(function () { });
+  function choice() {
+    var v = C.settings.voice || '';
+    if (!v || v.indexOf('pack:') === 0) { var p = PACKS.filter(function (x) { return 'pack:' + x.id === v; })[0] || PACKS[0]; if (p) return { pack: p }; }
+    var want = v.indexOf('dev:') === 0 ? v.slice(4) : v;
+    return { dev: VOICES.filter(function (x) { return x.voiceURI === want; })[0] || VOICES[0] || null };
   }
-  function hush() { R.token++; try { if (TTS && (TTS.speaking || TTS.pending)) TTS.cancel(); } catch (e) { } }
+  function voiceOn() { return C.settings.speak && (PACKS.length > 0 || !!TTS); }
+  function pad2(n) { return (n < 10 ? '0' : '') + n; }
+  function clipUrl(p, ln) { return 'audio/' + p.id + '/' + (ln.n ? pad2(ln.n) : ln.clip) + '.' + (p.ext || 'mp3'); }
+  var BUF = {}, BUFQ = [], SRC = null;
+  function buffer(url) {
+    if (BUF[url]) return BUF[url];
+    var a = ctx(); if (!a || !window.fetch) return Promise.reject(new Error('no audio'));
+    var pr = BUF[url] = fetch(url).then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.arrayBuffer(); }).then(function (b) {
+      return new Promise(function (ok, bad) { var q = a.decodeAudioData(b, ok, bad); if (q && q.then) q.then(ok, bad); });
+    });
+    pr.catch(function () { if (BUF[url] === pr) delete BUF[url]; });
+    BUFQ.push(url); while (BUFQ.length > 10) delete BUF[BUFQ.shift()];
+    return pr;
+  }
+  function prefetch(n) { var p = C.settings.speak && choice().pack; if (p && n) buffer(clipUrl(p, { n: n })).catch(function () { }); }
+  // One line: { text } plus { n, part: 'verse' | 'name' | 'all' } for a card, or { clip } for the other clips.
+  function playClip(p, ln, token, next) {
+    var done = false, fb = setTimeout(miss, 12000);
+    function ok() { if (done) return; done = true; clearTimeout(fb); next(); }
+    function miss() { if (done) return; done = true; clearTimeout(fb); if (token === R.token) device(ln.text, token, next); }
+    buffer(clipUrl(p, ln)).then(function (buf) {
+      if (done || token !== R.token) return;
+      var a = ctx(), k = ln.n && p.cards[ln.n], from = 0, to = buf.duration;
+      if (k && ln.part === 'verse') to = Math.min(buf.duration, k[0] + 0.15);
+      if (k && ln.part === 'name') from = Math.max(0, k[1] - 0.05);
+      var s = a.createBufferSource(); s.buffer = buf; s.connect(a.destination);
+      s.onended = function () { if (SRC === s) SRC = null; if (token === R.token) ok(); };
+      clearTimeout(fb); fb = setTimeout(ok, (to - from) * 1000 + 1500);
+      SRC = s; s.start(0, from, Math.max(0.05, to - from));
+    }, miss);
+  }
+  // Spellings speech engines trip on, rewritten the way a caller says them.
+  function spoken(t) { return t.replace(/Violon[cç]ello/g, 'Violonchelo').replace(/violon[cç]ello/g, 'violonchelo').replace(/\bp’al\b/g, 'pal').replace(/\bpa’/g, 'pa'); }
+  function device(text, token, next) {
+    var fired = false, fb = 0;
+    function done() { if (fired) return; fired = true; clearTimeout(fb); if (token === R.token) next(); }
+    if (!C.settings.speak || !TTS) { fb = setTimeout(done, 700 + text.length * 32); return; }
+    var u = new SpeechSynthesisUtterance(spoken(text)), v = choice().dev || VOICES[0];
+    if (v) { u.voice = v; u.lang = v.lang; } else u.lang = 'es-MX';
+    u.rate = C.settings.rate; u.onend = done; u.onerror = done;
+    fb = setTimeout(done, 2500 + text.length * 110 / C.settings.rate);
+    try { if (TTS.speaking || TTS.pending) TTS.cancel(); TTS.speak(u); } catch (e) { done(); }
+  }
+  function say(lines, done) {
+    var token = ++R.token, i = 0;
+    (function step() {
+      if (token !== R.token) return;
+      if (i >= lines.length) { if (done) done(); return; }
+      var ln = lines[i++], p = C.settings.speak ? choice().pack : null;
+      var next = function () { if (token === R.token) setTimeout(step, i < lines.length ? ln.gap || 0 : 0); };
+      if (p && (ln.n || ln.clip)) playClip(p, ln, token, next); else device(ln.text, token, next);
+    })();
+  }
+  function hush() {
+    R.token++;
+    if (SRC) { try { SRC.onended = null; SRC.stop(); } catch (e) { } SRC = null; }
+    try { if (TTS && (TTS.speaking || TTS.pending)) TTS.cancel(); } catch (e) { }
+  }
 
   // ---------- screen wake ----------
   var WL = null;
@@ -377,14 +439,15 @@ a{color:var(--teal);font-weight:700}
     var c = card(cur()), style = C.settings.style;
     snap(); $('live').textContent = c.name;
     R.phase = 'speaking';
+    var V = { n: c.n, part: 'verse', text: c.verse, gap: 250 }, N = { n: c.n, part: 'name', text: c.name };
     if (style === 'riddle') {
       showCard(true);
-      speak(c.verse, function () { reveal(); speak(c.name, afterCall); });
+      say([V], function () { var t = R.token; setTimeout(function () { if (t !== R.token) return; reveal(); say([N], afterCall); }, 700); });
     } else {
       showCard(false);
-      speak(style === 'name' ? c.name : c.verse + ' … ' + c.name, afterCall);
+      say(style === 'name' ? [N] : C.settings.speak && choice().pack ? [{ n: c.n, part: 'all', text: c.verse + ' ' + c.name }] : [V, N], afterCall);
     }
-    preload(); renderAll();
+    prefetch(C.order[C.pos]); preload(); renderAll();
   }
   function afterCall() { R.phase = 'idle'; if (C.pos >= 54) { finish(); return; } if (R.playing) wait(); else renderBar(); }
   function wait() {
@@ -395,19 +458,20 @@ a{color:var(--teal);font-weight:700}
   }
   function play() {
     if (C.pos >= 54) { newRoundAsk(); return; }
-    R.playing = true; ac(); wake(true); if (!VOICES.length) loadVoices();
+    R.playing = true; unlock(); wake(true); if (!VOICES.length) loadVoices();
     if (!C.pos) { begin(); return; }
     if (R.phase === 'idle') wait(); else renderBar();
   }
   function pause() { R.playing = false; clearTimeout(R.timer); R.timer = 0; if (R.phase === 'waiting') R.phase = 'idle'; renderBar(); }
   function begin() {
     R.phase = 'speaking'; R.opening = true; renderCaption(); renderBar();
-    speak('¡Se va y se corre, con la vieja en el coche!', function () {
+    prefetch(C.order[0]);
+    say([{ clip: 'open', text: '¡Se va y se corre, con la vieja en el coche!' }], function () {
       if (R.playing) { deal(); return; }
       R.opening = false; R.phase = 'idle'; renderCaption(); renderBar();
     });
   }
-  function next() { if (C.pos >= 54) { newRoundAsk(); return; } hush(); ac(); wake(true); deal(); }
+  function next() { if (C.pos >= 54) { newRoundAsk(); return; } hush(); unlock(); wake(true); deal(); }
   function back() {
     if (!C.pos) return;
     pause(); hush(); R.phase = 'idle'; R.opening = false;
@@ -622,12 +686,13 @@ a{color:var(--teal);font-weight:700}
       ['name', 'Name only', 'Quick and plain: “La Luna.”']
     ];
     function draw() {
-      var has = !!TTS;
+      var has = !!TTS || PACKS.length > 0, ch = choice();
       $('spBtn').textContent = st.speak && has ? 'On' : 'Off'; $('spBtn').classList.toggle('on', st.speak && has); $('spBtn').disabled = !has;
-      $('vNote').textContent = !has ? 'This browser can’t speak, so El Cantor shows each card and you read it.' : !st.speak ? 'Off — El Cantor shows each card and you read it out.' : VOICES.length ? 'In Spanish, with the voice below.' : 'This device has no Spanish voice installed, so it reads with its default voice.';
-      $('vRow').hidden = $('rRow').hidden = !(has && st.speak);
-      var sel = $('vSel'), cv = voice();
-      sel.innerHTML = VOICES.length ? VOICES.map(function (v) { return '<option value="' + esc(v.voiceURI) + '"' + (cv && v.voiceURI === cv.voiceURI ? ' selected' : '') + '>' + esc(v.name) + ' · ' + esc(v.lang) + '</option>'; }).join('') : '<option value="">Default voice</option>';
+      $('vNote').textContent = !has ? 'This browser can’t speak, so El Cantor shows each card and you read it.' : !st.speak ? 'Off — El Cantor shows each card and you read it out.' : ch.pack ? 'A recorded Spanish voice — it sounds the same on every phone and tablet.' : VOICES.length ? 'This device’s own Spanish voice.' : 'This device has no Spanish voice, so it reads with its default one and mangles the words. On an iPhone or iPad, add one under Settings › Accessibility › Spoken Content › Voices › Spanish.';
+      $('vRow').hidden = !(has && st.speak); $('rRow').hidden = !(has && st.speak && !ch.pack);
+      var sel = $('vSel'), opts = PACKS.map(function (p) { return '<option value="pack:' + esc(p.id) + '"' + (ch.pack === p ? ' selected' : '') + '>' + esc(p.name) + ' · recorded' + (p.about ? ', ' + esc(p.about) : '') + '</option>'; });
+      opts = opts.concat(VOICES.map(function (v) { return '<option value="dev:' + esc(v.voiceURI) + '"' + (ch.dev === v ? ' selected' : '') + '>' + esc(v.name) + ' · ' + esc(v.lang) + ' · this device</option>'; }));
+      sel.innerHTML = opts.length ? opts.join('') : '<option value="">This device’s default voice</option>';
       $('rate').value = st.rate; $('rateV').textContent = st.rate === 1 ? 'normal' : st.rate < 1 ? 'slower' : 'faster';
       $('styles').innerHTML = STYLES.map(function (s) { return '<button type="button" class="opt' + (st.style === s[0] ? ' on' : '') + '" data-v="' + s[0] + '"><b>' + s[1] + '</b><small>' + s[2] + '</small></button>'; }).join('');
       $('styles').querySelectorAll('.opt').forEach(function (b) { b.addEventListener('click', function () { st.style = b.dataset.v; save(); draw(); }); });
@@ -644,9 +709,16 @@ a{color:var(--teal);font-weight:700}
       var armed = false;
       $('wClr').addEventListener('click', function () { if (!armed) { armed = true; this.textContent = 'Tap again to clear'; return; } C.wins = []; save(); winsCard(); });
     }
-    $('spBtn').addEventListener('click', function () { st.speak = !st.speak; save(); if (!st.speak && TTS) { try { TTS.cancel(); } catch (e) { } } draw(); });
-    $('vSel').addEventListener('change', function () { st.voice = this.value; save(); });
-    $('vTest').addEventListener('click', function () { var was = R.token; speak('El farol de los enamorados … La Luna', null); if (R.phase === 'speaking') R.token = was; });
+    $('spBtn').addEventListener('click', function () {
+      st.speak = !st.speak; save();
+      if (!st.speak) { try { if (SRC) SRC.stop(); if (TTS) TTS.cancel(); } catch (e) { } }
+      draw();
+    });
+    $('vSel').addEventListener('change', function () { st.voice = this.value; save(); draw(); });
+    $('vTest').addEventListener('click', function () {
+      if (R.phase === 'speaking') { toast('Try it between cards'); return; }
+      unlock(); say([{ n: 23, part: 'all', text: 'El farol de los enamorados. La Luna.' }], null);
+    });
     $('rate').addEventListener('input', function () { st.rate = parseFloat(this.value) || 1; save(); $('rateV').textContent = st.rate === 1 ? 'normal' : st.rate < 1 ? 'slower' : 'faster'; });
     document.querySelectorAll('#paceSeg button').forEach(function (b) { b.addEventListener('click', function () { setPace(b.dataset.v); draw(); }); });
     $('sndBtn').addEventListener('click', function () { st.sound = !st.sound; save(); draw(); if (st.sound) snap(); });
@@ -760,7 +832,7 @@ a{color:var(--teal);font-weight:700}
     var box = $('winbox'), r = C.round;
     box.innerHTML = '<div class="winbg"><div class="winc"><h2>¡Lotería!</h2><p>' + (who ? '<b>' + esc(who) + '</b> wins round ' + r : 'Round ' + r + ' is won') + ' after ' + plural(C.pos, 'card', 'cards') + '.</p><div class="row"><button class="btn red" type="button" id="celOk">Shuffle for round ' + (r + 1) + '</button></div></div></div>';
     box.hidden = false;
-    if (voiceOn()) speak(who ? '¡Lotería! Felicidades, ' + who + '.' : '¡Lotería!', null);
+    if (voiceOn()) say([{ clip: 'loteria', text: '¡Lotería!', gap: 200 }].concat(who && !choice().pack ? [{ text: 'Felicidades, ' + who + '.' }] : []), null);
     $('celOk').addEventListener('click', function () { box.hidden = true; newRound(); patternSheet('Round ' + C.round + ' — what are we playing?'); });
     $('celOk').focus();
   }
