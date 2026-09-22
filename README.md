@@ -15,7 +15,7 @@ A play-along board for the iPad or phone. Someone calls the cards; you tap **Can
 El Cantor replaces the deck and the person reading it.
 
 - Shuffles the 54 cards and turns them over one at a time, reading each verse and name aloud in Spanish. Tap ▶ to call on its own at a slow, normal or fast pace, or turn each card by hand.
-- Plays recorded voices listed in `audio/voices.json` when there are any (one clip per card: verse, a breath, the name), so every device sounds the same; otherwise it uses the device's own Spanish voice.
+- Reads with recorded Spanish voices — Dora, Alex or Santa — so every phone and tablet sounds the same; the device's own Spanish voice is the fallback.
 - **Adivinanza** mode reads the verse with the card face down so the table can guess before it turns over.
 - The **sábana** shows all 54 cards, lit in the order they were called.
 - **Print tablas** makes a PDF of numbered tablas to print at home (one big or two per page, Letter or A4). A set — a *juego* — is built from its name, so `CANELA` tabla 7 is always the same tabla.
@@ -25,4 +25,6 @@ El Cantor replaces the deck and the person reading it.
 ## Files
 
 - `deck.js` — the cards, their verses, the winning shapes, and the juego generator, shared by both pages. The generator is frozen: changing it would change every tabla already printed.
+- `audio/` — the recorded voices: one clip per card (verse, a breath, the name) plus the opening line and ¡Lotería!, and `voices.json`, which lists the voices and where each verse ends so Adivinanza can stop before the name.
+- `tools/make_voices.py` — renders `audio/` with [Kokoro-82M](https://github.com/hexgrad/kokoro) (Apache-2.0), using espeak-ng's Latin American Spanish for pronunciation. Rerun it after changing a verse in `deck.js`.
 - The card images sit beside the pages.
