@@ -109,6 +109,7 @@ input:focus-visible,button:focus-visible{outline:2px solid var(--teal);outline-o
 .btn.sec{background:var(--paper);color:var(--ink);border-color:var(--line2)}
 .btn.red{background:var(--red);border-color:var(--red);color:var(--red-ink)}
 .btn.sm{padding:6px 10px;font-size:13px}
+a.btn{text-decoration:none;display:inline-block}
 .note{color:var(--ink2);font-size:13.5px}
 .eyebrow{font:600 11px var(--body);letter-spacing:.12em;text-transform:uppercase;color:var(--ink3)}
 .card{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px 14px;box-shadow:var(--shadow)}
@@ -468,7 +469,7 @@ input:focus-visible,button:focus-visible{outline:2px solid var(--teal);outline-o
 
   function tablasSheet() {
     var p = player();
-    openSheet('<div class="hd"><input id="tbName" value="' + esc(p.name) + '" aria-label="Player name" style="font:400 18px var(--disp);flex:1"><button class="btn sec sm" type="button" id="tbShare">Share</button><button class="btn sm" type="button" id="tbx">Done</button></div><div class="bd stack"><p class="note">Tap any square to change its card. Doubles are fine (house rules) — when that card is called, both squares get a bean. Names are editable.</p><div class="edb" id="edb"></div><div class="row"><button class="btn sec sm" type="button" id="tbAdd">+ Add a tabla</button><button class="btn sec sm" type="button" id="tbOrig">Restore the original four</button><button class="btn sec sm" type="button" id="tbDel" style="color:var(--red)">Remove this person</button></div></div>');
+    openSheet('<div class="hd"><input id="tbName" value="' + esc(p.name) + '" aria-label="Player name" style="font:400 18px var(--disp);flex:1"><button class="btn sec sm" type="button" id="tbShare">Share</button><button class="btn sm" type="button" id="tbx">Done</button></div><div class="bd stack"><p class="note">Tap any square to change its card. Doubles are fine (house rules) — when that card is called, both squares get a bean. Names are editable.</p><div class="edb" id="edb"></div><div class="row"><button class="btn sec sm" type="button" id="tbAdd">+ Add a tabla</button><button class="btn sec sm" type="button" id="tbOrig">Restore the original four</button><a class="btn sec sm" href="print.html">Make tablas to print</a><button class="btn sec sm" type="button" id="tbDel" style="color:var(--red)">Remove this person</button></div></div>');
     function draw() {
       var host = $('edb'); host.innerHTML = '';
       p.boards.forEach(function (bd, bi) {
