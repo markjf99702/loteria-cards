@@ -1,6 +1,7 @@
-/* Lotería deck, shared by the board (index.html) and the caller (cantor.html).
-   Card images sit beside the pages; a page can point elsewhere with
-   <script src="deck.js" data-cards="cards/">. */
+/* Lotería deck: the cards, their verses, the winning shapes and the juego generator.
+   El Cantor (markjf99702/el-cantor) carries the same file; keep the two in step so
+   printed tablas and wins agree. Card images are found beside the page, or wherever
+   the script tag points: <script src="deck.js" data-cards="cards/">. */
 (function () {
   'use strict';
   var me = document.currentScript, DIR = (me && me.getAttribute('data-cards')) || '';

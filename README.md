@@ -1,30 +1,22 @@
 # loteria-cards
 
-Two pages for a Lotería night, one for the players and one for the caller. Everything is stored on the device: no accounts, nothing sent anywhere.
+A play-along Lotería board for the iPad or phone. Everything is stored on the device: no accounts, nothing sent anywhere.
 
 ## The board — `index.html`
 
-A play-along board for the iPad or phone. Someone calls the cards; you tap **Cantaron…**, pick the card, and it marks itself on every tabla where it appears.
+Someone calls the cards; you tap **Cantaron…**, pick the card, and it marks itself on every tabla where it appears.
 
 - Pick the game each round: Clásico (4 in a row, 4 corners, or 4 in a square), or a single shape — La Equis, La Ele, El Marco, Rieles, Escalera, Centro, Siete Loco, Tabla Llena.
 - Edit tablas square by square (doubles allowed, house rules), add up to six per person, or add a **printed tabla** by its juego name and number.
 - Several people on one device, each with their own tablas; **Share** makes a link that carries a set of tablas to another phone.
 
-## The caller — `cantor.html`
+## The caller
 
-El Cantor replaces the deck and the person reading it.
-
-- Shuffles the 54 cards and turns them over one at a time, calling each one aloud in Spanish — just the name by default, or the verse and then the name. Tap ▶ to call on its own at a slow, normal or fast pace, or turn each card by hand.
-- Reads with recorded Spanish voices — Dora, Alex or Santa — so every phone and tablet sounds the same; the device's own Spanish voice is the fallback.
-- **Adivinanza** mode reads the verse with the card face down so the table can guess before it turns over.
-- The **sábana** shows all 54 cards, lit in the order they were called.
-- **Print tablas** makes a PDF of numbered tablas to print at home (one big or two per page, Letter or A4). A set — a *juego* — is built from its name, so `CANELA` tabla 7 is always the same tabla.
-- **¡Lotería!** takes the winner's word by default: a cheer, the winner's name (one tap for past winners), and the next round. Tables that check can switch it in Settings, or tap **Check a tabla first**: type the juego and tabla number and it shows the tabla with beans on the called cards, says whether it wins the current game and when it first did. For store-bought tablas, tap the cards the player reads out instead.
-- Keeps a tally of who won each round.
+[El Cantor](https://github.com/markjf99702/el-cantor) lives in its own repo. It calls the cards aloud in Spanish, prints numbered tablas that this board can load, and checks a ¡Lotería!. The board's Settings link to it at https://markjf99702.github.io/el-cantor/.
 
 ## Files
 
-- `deck.js` — the cards, their verses, the winning shapes, and the juego generator, shared by both pages. The generator is frozen: changing it would change every tabla already printed.
-- `audio/` — the recorded voices: one clip per card (verse, a breath, the name) plus the opening line and ¡Lotería!, and `voices.json`, which lists the voices and where each verse ends so Adivinanza can stop before the name.
-- `tools/make_voices.py` — renders `audio/` with [Kokoro-82M](https://github.com/hexgrad/kokoro) (Apache-2.0), using espeak-ng's Latin American Spanish for pronunciation. Rerun it after changing a verse in `deck.js`.
-- The card images sit beside the pages.
+- `deck.js` — the cards, their verses, the winning shapes, and the juego generator.
+  - The generator is frozen: changing it would change every tabla already printed.
+  - El Cantor carries the same file; keep the two in step.
+- The card images sit beside the page.
