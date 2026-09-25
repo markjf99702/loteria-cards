@@ -185,8 +185,9 @@ table.ages-t{border-collapse:separate;border-spacing:0;width:100%}
 .ev-meta{font:400 12px/1.4 var(--mono);color:var(--muted);letter-spacing:.01em}
 .ev-t{font:700 19px/1.2 var(--ui);letter-spacing:.01em;margin-top:1px}
 .ev p{margin:3px 0 0;font-size:16px;line-height:1.5;color:var(--ink-2);max-width:42em}
-.ev-note{margin-top:5px;font:400 13px/1.45 var(--mono);color:var(--ink);display:flex;gap:6px;align-items:baseline;flex-wrap:wrap}
-.ev-note .dot{width:9px;height:9px;border-radius:50%;display:inline-block}
+.ev-note{margin-top:5px;font:400 13px/1.45 var(--mono);color:var(--ink);display:flex;gap:6px;align-items:baseline}
+.ev-note .dot{width:9px;height:9px;border-radius:50%;display:inline-block;flex:none}
+.ev-note span{flex:1;min-width:0}
 .ev.state .ev-t::before{content:attr(data-st);font:500 11px/1 var(--mono);background:var(--accent-soft);color:var(--ink);border-radius:4px;padding:3px 6px;margin-right:8px;vertical-align:3px;letter-spacing:.02em}
 details.before{border-top:1px solid var(--rule);padding-block:12px}
 details.before summary{cursor:pointer;font:700 19px/1.2 var(--ui);letter-spacing:.02em;color:var(--ink-2)}
@@ -480,61 +481,62 @@ dialog .row .right{display:flex;gap:10px;margin-left:auto}
   States: code | name | decriminalized | how | marriage | how | earlier marriage windows | first civil union or partnership | note
     how (decriminalized): legislature, court, lawrence
     how (marriage): court, legislature, ballot, federal-court, obergefell
-    windows: from>to, comma separated
+    windows: from>to>title>blurb, separated by ; (marriages that started somewhere in the state and were stopped, or spread county by county)
     unions: date kind
+    note: a sentence added wherever the state's sodomy law comes up
 -->
 <script type="text/plain" id="data-states">
-AL | Alabama | 2003-06-26 | lawrence | 2015-06-26 | obergefell | 2015-02-09>2015-03-03 | |
-AK | Alaska | 1980 | legislature | 2014-10-17 | federal-court | | |
-AZ | Arizona | 2001 | legislature | 2014-10-17 | federal-court | | |
-AR | Arkansas | 2002-07-05 | court | 2015-06-26 | obergefell | | |
-CA | California | 1976-01-01 | legislature | 2013-06-28 | federal-court | 2008-06-16>2008-11-05 | 2000-01-01 domestic partnerships |
-CO | Colorado | 1972 | legislature | 2014-10-07 | federal-court | | |
-CT | Connecticut | 1971-10-01 | legislature | 2008-11-12 | court | | 2005-10-01 civil unions |
-DE | Delaware | 1973 | legislature | 2013-07-01 | legislature | | |
-DC | District of Columbia | 1995 | legislature | 2010-03-09 | legislature | | |
-FL | Florida | 2003-06-26 | lawrence | 2015-01-06 | federal-court | | |
-GA | Georgia | 1998-11-23 | court | 2015-06-26 | obergefell | | |
-HI | Hawaii | 1973 | legislature | 2013-12-02 | legislature | | |
-ID | Idaho | 2003-06-26 | lawrence | 2014-10-15 | federal-court | | |
-IL | Illinois | 1962-01-01 | legislature | 2014-06-01 | legislature | | 2011-06-01 civil unions |
-IN | Indiana | 1977 | legislature | 2014-10-06 | federal-court | | |
-IA | Iowa | 1978 | legislature | 2009-04-27 | court | | |
-KS | Kansas | 2003-06-26 | lawrence | 2014-11-12 | federal-court | | |
-KY | Kentucky | 1992-09-24 | court | 2015-06-26 | obergefell | | |
-LA | Louisiana | 2003-06-26 | lawrence | 2015-06-26 | obergefell | | |
-ME | Maine | 1976 | legislature | 2012-12-29 | ballot | | |
-MD | Maryland | 1999 | court | 2013-01-01 | ballot | | |
-MA | Massachusetts | 2002 | court | 2004-05-17 | court | | |
-MI | Michigan | 2003-06-26 | lawrence | 2015-06-26 | obergefell | | |
-MN | Minnesota | 2001 | court | 2013-08-01 | legislature | | |
-MS | Mississippi | 2003-06-26 | lawrence | 2015-06-26 | obergefell | | |
-MO | Missouri | 2003-06-26 | lawrence | 2015-06-26 | obergefell | | |
-MT | Montana | 1997 | court | 2014-11-19 | federal-court | | |
-NE | Nebraska | 1978 | legislature | 2015-06-26 | obergefell | | |
-NV | Nevada | 1993 | legislature | 2014-10-09 | federal-court | | |
-NH | New Hampshire | 1975 | legislature | 2010-01-01 | legislature | | 2008-01-01 civil unions |
-NJ | New Jersey | 1979 | legislature | 2013-10-21 | court | | |
-NM | New Mexico | 1975 | legislature | 2013-12-19 | court | | |
-NY | New York | 1980-12-20 | court | 2011-07-24 | legislature | | |
-NC | North Carolina | 2003-06-26 | lawrence | 2014-10-10 | federal-court | | |
-ND | North Dakota | 1975 | legislature | 2015-06-26 | obergefell | | |
-OH | Ohio | 1974-01-01 | legislature | 2015-06-26 | obergefell | | |
-OK | Oklahoma | 2003-06-26 | lawrence | 2014-10-06 | federal-court | | |
-OR | Oregon | 1972-01-01 | legislature | 2014-05-19 | federal-court | | |
-PA | Pennsylvania | 1980 | court | 2014-05-20 | federal-court | | |
-RI | Rhode Island | 1998 | legislature | 2013-08-01 | legislature | | |
-SC | South Carolina | 2003-06-26 | lawrence | 2014-11-20 | federal-court | | |
-SD | South Dakota | 1977 | legislature | 2015-06-26 | obergefell | | |
-TN | Tennessee | 1996 | court | 2015-06-26 | obergefell | | |
-TX | Texas | 2003-06-26 | lawrence | 2015-06-26 | obergefell | | |
-UT | Utah | 2003-06-26 | lawrence | 2014-10-06 | federal-court | 2013-12-20>2014-01-06 | |
-VT | Vermont | 1977 | legislature | 2009-09-01 | legislature | | 2000-07-01 civil unions |
-VA | Virginia | 2003-06-26 | lawrence | 2014-10-06 | federal-court | | |
-WA | Washington | 1976 | legislature | 2012-12-06 | ballot | | |
-WV | West Virginia | 1976 | legislature | 2014-10-09 | federal-court | | |
-WI | Wisconsin | 1983 | legislature | 2014-10-06 | federal-court | | |
-WY | Wyoming | 1977 | legislature | 2014-10-21 | federal-court | | |
+AL | Alabama | 2003-06-26 | lawrence | 2015-06-26 | obergefell | 2015-02-09>2015-03-03>Weddings begin, then stop>After a federal ruling, most Alabama counties issue licenses to same-sex couples, until the Alabama Supreme Court orders judges to stop on March 3. |  | 
+AK | Alaska | 1980-01-01 | legislature | 2014-10-12 | federal-court |  |  | 
+AZ | Arizona | 2001-08-09 | legislature | 2014-10-17 | federal-court |  |  | 
+AR | Arkansas | 2002-07-05 | court | 2015-06-26 | obergefell | 2014-05-10>2014-05-16>Weddings begin, then stop>After a state judge strikes down the ban, about 500 couples get licenses before the Arkansas Supreme Court puts the ruling on hold on May 16. |  | Arkansas had repealed its law in 1976, then made sex between people of the same sex a crime again in 1977.
+CA | California | 1976-01-01 | legislature | 2013-06-28 | federal-court | 2004-02-12>2004-03-11>San Francisco weddings>San Francisco issues about 4,000 marriage licenses to same-sex couples on the mayor’s order, until the state Supreme Court stops it on March 11. The marriages are later voided.;2008-06-16>2008-11-05>Weddings begin, then stop>Same-sex couples can marry across California until Proposition 8 passes in November. About 18,000 couples marry, and their marriages stay valid. | 2000-01-01 domestic partnerships | 
+CO | Colorado | 1972-07-01 | legislature | 2014-10-07 | federal-court | 1975-03>1975-04>A clerk in Boulder>Boulder County clerk Clela Rorex issues marriage licenses to six same-sex couples until the state attorney general tells her to stop.;2014-06-25>2014-07-29>Boulder issues licenses>Boulder County issues about 200 licenses to same-sex couples until the Colorado Supreme Court stops it. | 2013-05-01 civil unions | 
+CT | Connecticut | 1971-10-01 | legislature | 2008-11-12 | court |  | 2005-10-01 civil unions | 
+DE | Delaware | 1973-07-01 | legislature | 2013-07-01 | legislature |  | 2012-01-01 civil unions | 
+DC | District of Columbia | 1993-09-14 | legislature | 2010-03-09 | legislature |  | 2002-07-08 domestic partnerships | 
+FL | Florida | 2003-06-26 | lawrence | 2015-01-06 | federal-court |  |  | 
+GA | Georgia | 1998-11-23 | court | 2015-06-26 | obergefell |  |  | 
+HI | Hawaii | 1973-01-01 | legislature | 2013-12-02 | legislature |  | 1997-07 reciprocal beneficiary status | 
+ID | Idaho | 2003-06-26 | lawrence | 2014-10-15 | federal-court |  |  | Idaho repealed its law at the start of 1972, then brought it back three months later.
+IL | Illinois | 1962-01-01 | legislature | 2014-06-01 | legislature | 2014-02-21>2014-06-01>Chicago goes first>After a federal ruling, Cook County starts issuing licenses to same-sex couples, months before the statewide law takes effect. | 2011-06-01 civil unions | 
+IN | Indiana | 1977 | legislature | 2014-10-06 | federal-court | 2014-06-25>2014-06-27>Three days of weddings>A federal ruling lets couples marry in most Indiana counties until an appeals court puts it on hold on June 27. |  | 
+IA | Iowa | 1978-01-01 | legislature | 2009-04-27 | court | 2007-08-31>2007-08-31>One wedding>A judge strikes down Iowa’s ban. One couple marries before he puts his ruling on hold the next day. |  | 
+KS | Kansas | 2003-06-26 | lawrence | 2015-06-26 | obergefell | 2014-11-12>2015-06-26>Licenses, but no recognition>Most Kansas counties begin issuing licenses to same-sex couples, but the state refuses to recognize the marriages until 2015. |  | The law there applied only to same-sex couples.
+KY | Kentucky | 1992-09-24 | court | 2015-06-26 | obergefell |  |  | The law there applied only to same-sex couples.
+LA | Louisiana | 2003-06-26 | lawrence | 2015-06-26 | obergefell |  |  | 
+ME | Maine | 1976-05-01 | legislature | 2012-12-29 | ballot |  | 2004-07-30 domestic partnerships | 
+MD | Maryland | 1999-01-19 | court | 2013-01-01 | ballot |  | 2008-07-01 domestic partnerships | 
+MA | Massachusetts | 2002-02-21 | court | 2004-05-17 | court |  |  | 
+MI | Michigan | 2003-06-26 | lawrence | 2015-06-26 | obergefell | 2014-03-22>2014-03-22>One Saturday of weddings>After a federal ruling late on a Friday, four county clerks open on Saturday and 323 couples marry before an appeals court puts the ruling on hold. |  | 
+MN | Minnesota | 2001-07-02 | court | 2013-08-01 | legislature |  |  | 
+MS | Mississippi | 2003-06-26 | lawrence | 2015-06-26 | obergefell |  |  | 
+MO | Missouri | 2003-06-26 | lawrence | 2015-06-26 | obergefell | 2014-11-05>2015-06-26>St. Louis goes first>A state judge strikes down the ban for the City of St. Louis, which keeps issuing licenses to same-sex couples. |  | The law there applied only to same-sex couples.
+MT | Montana | 1997-07-02 | court | 2014-11-19 | federal-court |  |  | The law there applied only to same-sex couples.
+NE | Nebraska | 1978-07-01 | legislature | 2015-06-26 | obergefell |  |  | 
+NV | Nevada | 1993-10-01 | legislature | 2014-10-09 | federal-court |  | 2009-10-01 domestic partnerships | The law there applied only to same-sex couples.
+NH | New Hampshire | 1975 | legislature | 2010-01-01 | legislature |  | 2008-01-01 civil unions | 
+NJ | New Jersey | 1979-09-01 | legislature | 2013-10-21 | court |  | 2004-07-10 domestic partnerships | 
+NM | New Mexico | 1975-06 | legislature | 2013-12-19 | court | 2004-02-20>2004-02-20>Sandoval County weddings>Sandoval County’s clerk issues 64 licenses to same-sex couples before the attorney general stops her the same day.;2013-08-21>2013-12-19>County by county>New Mexico counties begin marrying same-sex couples one at a time, starting with Doña Ana County. |  | 
+NY | New York | 1980-12-18 | court | 2011-07-24 | legislature |  |  | 
+NC | North Carolina | 2003-06-26 | lawrence | 2014-10-10 | federal-court |  |  | 
+ND | North Dakota | 1975-07-01 | legislature | 2015-06-26 | obergefell |  |  | 
+OH | Ohio | 1974-01-01 | legislature | 2015-06-26 | obergefell |  |  | 
+OK | Oklahoma | 2003-06-26 | lawrence | 2014-10-06 | federal-court |  |  | Since a 1986 ruling, the law there applied only to same-sex couples.
+OR | Oregon | 1972-01-01 | legislature | 2014-05-19 | federal-court | 2004-03-03>2004-04-20>Portland weddings>Multnomah County issues more than 3,000 licenses to same-sex couples until a judge stops it. The marriages are later voided. | 2008-02-04 domestic partnerships | 
+PA | Pennsylvania | 1980-05-30 | court | 2014-05-20 | federal-court | 2013-07-24>2013-09-12>Montgomery County licenses>A Montgomery County official issues 174 licenses to same-sex couples until a court orders him to stop. |  | 
+RI | Rhode Island | 1998-06-05 | legislature | 2013-08-01 | legislature |  | 2011-07-01 civil unions | 
+SC | South Carolina | 2003-06-26 | lawrence | 2014-11-20 | federal-court |  |  | 
+SD | South Dakota | 1977-04-01 | legislature | 2015-06-26 | obergefell |  |  | 
+TN | Tennessee | 1996-01-26 | court | 2015-06-26 | obergefell |  |  | The law there applied only to same-sex couples.
+TX | Texas | 2003-06-26 | lawrence | 2015-06-26 | obergefell | 2015-02-19>2015-02-19>One wedding in Austin>One couple marries under a court order before the Texas Supreme Court blocks further licenses the same day. |  | The law there applied only to same-sex couples.
+UT | Utah | 2003-06-26 | lawrence | 2014-10-06 | federal-court | 2013-12-20>2014-01-06>Weddings begin, then stop>After a federal ruling, about 1,300 couples marry in Utah before the US Supreme Court puts it on hold on January 6. |  | 
+VT | Vermont | 1977 | legislature | 2009-09-01 | legislature |  | 2000-07-01 civil unions | 
+VA | Virginia | 2003-06-26 | lawrence | 2014-10-06 | federal-court |  |  | 
+WA | Washington | 1976-07-01 | legislature | 2012-12-06 | ballot |  | 2007-07-22 domestic partnerships | 
+WV | West Virginia | 1976 | legislature | 2014-10-09 | federal-court |  |  | 
+WI | Wisconsin | 1983-05 | legislature | 2014-10-06 | federal-court | 2014-06-06>2014-06-13>Weddings begin, then stop>After a federal ruling, more than 500 couples marry in Wisconsin before the judge puts her ruling on hold on June 13. | 2009-08-03 domestic partnerships | 
+WY | Wyoming | 1977 | legislature | 2014-10-21 | federal-court |  |  |
 </script>
 
 <script>
@@ -588,7 +590,7 @@ $('#data-states').textContent.split('\n').map(l => l.trim()).filter(l => l && l[
     code, name,
     decrim: parseDate(dd), decrimHow: dh,
     marry: parseDate(md), marryHow: mh,
-    windows: win ? win.split(',').map(w => w.split('>').map(parseDate)) : [],
+    windows: win ? win.split(';').map(w => { const [a, b, title, blurb] = w.split('>'); return { from: parseDate(a), to: parseDate(b), title, blurb }; }) : [],
     unions: un ? { date: parseDate(un.split(' ')[0]), kind: un.split(' ').slice(1).join(' ') } : null,
     note: note || ''
   };
@@ -915,7 +917,8 @@ function statesOnPage(){
   people.forEach(p => { if (p.st) { if (!m.has(p.st)) m.set(p.st, []); m.get(p.st).push(p); } });
   return m;
 }
-const namesOf = list => list.map(p => p.name).join(' & ');
+const nameIn = p => /^you$/i.test(p.name.trim()) ? 'you' : /^(me|i)$/i.test(p.name.trim()) ? 'I' : p.name;
+const namesOf = list => list.map(nameIn).join(' & ');
 
 function agesHTML(t, cls, bornOnly){
   return '<div class="ages ' + (cls || '') + '">' + people.map(p => {
@@ -985,15 +988,14 @@ function allEvents(){
     const S = STATES[st];
     if (S.decrimHow === 'lawrence') {
       const law = list.find(e => e.date.s === '2003-06-26' && !e.st);
-      if (law) (law.notes = law.notes || []).push({ ps, txt: 'This ended the law in ' + S.name + '.' });
+      if (law) (law.notes = law.notes || []).push({ ps, txt: 'This ended the law in ' + S.name + ', where ' + namesOf(ps) + ' grew up.' + (S.note ? ' ' + S.note : '') });
     } else {
       list.push({ date: S.decrim, cat: 'rights', tone: '+', st, title: S.decrimHow === 'court' ? 'A court strikes down the sodomy law' : 'The sodomy law is repealed',
         blurb: (S.decrimHow === 'court' ? 'A ruling means sex between consenting adults of the same sex can no longer be prosecuted in ' + S.name + '.' : S.name + '’s legislature takes sex between consenting adults of the same sex out of its criminal law.') + (S.note ? ' ' + S.note : ''),
         notes: [{ ps, txt: '' }] });
     }
     S.windows.forEach(w => {
-      list.push({ date: w[0], cat: 'rights', tone: '.', st, title: 'Weddings begin, then stop',
-        blurb: 'Same-sex couples could marry in ' + S.name + ' from ' + fmtDate(w[0]) + ' until ' + fmtDate(w[1]) + '.', notes: [{ ps, txt: '' }] });
+      list.push({ date: w.from, cat: 'rights', tone: '.', st, title: w.title, blurb: w.blurb, notes: [{ ps, txt: '' }] });
     });
     if (S.unions && S.unions.date.t < S.marry.t) {
       list.push({ date: S.unions.date, cat: 'rights', tone: '+', st, title: cap(S.unions.kind),
@@ -1001,7 +1003,7 @@ function allEvents(){
     }
     if (S.marryHow === 'obergefell') {
       const ob = list.find(e => e.date.s === '2015-06-26' && !e.st);
-      if (ob) (ob.notes = ob.notes || []).push({ ps, txt: 'This brought marriage to ' + S.name + '.' });
+      if (ob) (ob.notes = ob.notes || []).push({ ps, txt: 'This brought marriage to ' + S.name + ', where ' + namesOf(ps) + ' grew up.' });
     } else {
       const how = { court: 'A state court ruling', legislature: 'A law passed by the legislature', ballot: 'A vote of the people', 'federal-court': 'A federal court ruling' }[S.marryHow] || 'A change in the law';
       list.push({ date: S.marry, cat: 'rights', tone: '+', st, title: 'Same-sex couples can marry',
@@ -1076,7 +1078,7 @@ function evHTML(e){
   let notes = '';
   (e.notes || []).forEach(n => {
     const who = n.ps.map(p => '<span class="dot" style="background:' + colorOf(p) + '"></span>').join('');
-    const where = e.st ? 'Where ' + esc(namesOf(n.ps)) + ' grew up.' : esc(n.txt) + ' ' + esc(namesOf(n.ps)) + ' grew up there.';
+    const where = e.st ? 'Where ' + esc(namesOf(n.ps)) + ' grew up.' : esc(n.txt);
     notes += '<div class="ev-note">' + who + '<span>' + where + '</span></div>';
   });
   return '<li class="' + cls + '"><span class="glyph" aria-hidden="true">' + glyph + '</span><div>' +
